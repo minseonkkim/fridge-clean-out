@@ -9,6 +9,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "supabase/tests/**/*.test.ts"],
+    // PGlite(WASM Postgres) 초기화가 느릴 수 있다.
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
   },
 });

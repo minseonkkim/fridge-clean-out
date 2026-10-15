@@ -13,6 +13,7 @@ import { buildIngredientIndex } from "@/lib/domain/search";
 import { CATEGORY_LABEL, STORAGE_LABEL, STORAGES, UNIT_LABEL, type Unit } from "@/lib/domain/types";
 import { useFridge } from "@/lib/repo/fridge-context";
 import { BottomSheet } from "./bottom-sheet";
+import { RecentPurchases } from "./recent-purchases";
 import { Segmented } from "./segmented";
 
 const index = buildIngredientIndex(INGREDIENTS);
@@ -34,6 +35,8 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
   const [saving, setSaving] = useState(false);
   const bulkEntries = useMemo(() => parseBulk(bulkText, index), [bulkText]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  /** 시트를 연 뒤 넣은 재료 (연속 등록 확인용) */
+  const [justAdded, setJustAdded] = useState<string[]>([]);
   const ids = {
     name: useId(),
     list: useId(),
@@ -116,6 +119,15 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
         />
       </div>
 
+      {justAdded.length > 0 && (
+        <p
+          role="status"
+          className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+        >
+          방금 넣음: {justAdded.join(", ")}
+        </p>
+      )}
+
       {mode === "bulk" ? (
         <BulkPanel text={bulkText} onChange={setBulkText} error={error} />
       ) : (
@@ -126,6 +138,10 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
             void submit();
           }}
         >
+          {!state.query && (
+            <RecentPurchases onAdded={(label) => setJustAdded((list) => [...list, label])} />
+          )}
+
           {/* 이름 + 자동완성 */}
           <div className="relative flex flex-col gap-1">
             <label htmlFor={ids.name} className="text-sm font-semibold">

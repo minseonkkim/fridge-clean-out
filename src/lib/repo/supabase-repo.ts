@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ItemPatch, NewItemInput, Preferences } from "@/lib/domain/fridge";
+import { recentPurchases } from "@/lib/domain/recent";
 import {
   CompartmentMap,
   itemFromRow,
@@ -140,6 +141,23 @@ export class SupabaseRepository implements FridgeRepository {
     if (error) fail("설정 저장", error);
     this.preferences = preferencesFromRow(data);
     return this.preferences;
+  }
+
+  async recentPurchases(limit = 12) {
+    const fridgeId = await this.ensureFridge();
+    // 같은 재료가 여러 번 있을 수 있으므로 넉넉히 받아 브라우저에서 중복을 거른다.
+    const { data, error } = await this.supabase
+      .from("fridge_items")
+      .select("*")
+      .eq("fridge_id", fridgeId)
+      .order("created_at", { ascending: false })
+      .limit(limit * 5)
+      .returns<FridgeItemRow[]>();
+    if (error) fail("최근 산 재료 불러오기", error);
+    return recentPurchases(
+      (data ?? []).map((r) => itemFromRow(r, this.compartments)),
+      limit,
+    );
   }
 
   async cook(recipeId: string, usages: CookUsage[], servings = 1) {

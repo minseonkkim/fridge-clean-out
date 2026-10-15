@@ -5,6 +5,7 @@ import type {
   Preferences,
   ShoppingItem,
 } from "@/lib/domain/fridge";
+import type { RecentPurchase } from "@/lib/domain/recent";
 import type { CookUsage } from "@/lib/trial/trial-store";
 
 export type { CookUsage };
@@ -28,4 +29,6 @@ export interface FridgeRepository {
   closeItem(itemId: string, status: "used_up" | "discarded"): Promise<FridgeItem>;
   savePreferences(patch: Partial<Preferences>): Promise<Preferences>;
   cook(recipeId: string, usages: CookUsage[], servings?: number): Promise<void>;
+  /** 최근 산 재료 (다 쓰거나 버린 것 포함, 중복 없이) */
+  recentPurchases(limit?: number): Promise<RecentPurchase[]>;
 }

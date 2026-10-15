@@ -1,4 +1,5 @@
 import type { ItemPatch, NewItemInput, Preferences } from "@/lib/domain/fridge";
+import { recentPurchases } from "@/lib/domain/recent";
 import {
   activeItems,
   addItems,
@@ -64,5 +65,9 @@ export class TrialRepository implements FridgeRepository {
 
   async cook(recipeId: string, usages: CookUsage[]) {
     this.commit(cookRecipe(this.data, recipeId, usages));
+  }
+
+  async recentPurchases(limit?: number) {
+    return recentPurchases(this.data.items, limit);
   }
 }

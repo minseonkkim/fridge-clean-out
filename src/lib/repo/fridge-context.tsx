@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { FridgeItem, ItemPatch, NewItemInput, Preferences } from "@/lib/domain/fridge";
+import type { RecentPurchase } from "@/lib/domain/recent";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { TRIAL_UPLOADED_EVENT } from "@/lib/trial/upload";
@@ -30,6 +31,7 @@ interface FridgeContextValue {
   closeItem(itemId: string, status: "used_up" | "discarded"): Promise<void>;
   savePreferences(patch: Partial<Preferences>): Promise<void>;
   cook(recipeId: string, usages: CookUsage[], servings?: number): Promise<void>;
+  recentPurchases(limit?: number): Promise<RecentPurchase[]>;
 }
 
 const FridgeContext = createContext<FridgeContextValue | null>(null);
@@ -138,6 +140,9 @@ export function FridgeProvider({ children }: { children: ReactNode }) {
       async cook(recipeId, usages, servings) {
         await need().cook(recipeId, usages, servings);
         await reload();
+      },
+      recentPurchases(limit) {
+        return need().recentPurchases(limit);
       },
     };
   }, [repo, snapshot, status, error, reload]);

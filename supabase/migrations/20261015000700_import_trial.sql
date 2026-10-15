@@ -36,6 +36,9 @@ begin
     raise exception '냉장고가 없습니다' using errcode = 'P0002';
   end if;
 
+  -- 체험 이력을 그대로 옮기므로 재료 이력 자동 기록 트리거(0900)를 이 트랜잭션에서 끈다.
+  perform set_config('app.skip_item_events', 'on', true);
+
   -- 재료
   with src as (
     select *
@@ -132,6 +135,8 @@ begin
     where user_id = v_uid and onboarded_at is null;
     get diagnostics v_prefs = row_count;
   end if;
+
+  perform set_config('app.skip_item_events', '', true);
 
   return jsonb_build_object(
     'items', v_items,

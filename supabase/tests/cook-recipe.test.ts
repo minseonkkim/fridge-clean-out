@@ -80,13 +80,17 @@ describe("cook_recipe RPC", () => {
     expect(await item(pork)).toEqual({ quantity: "400.00", status: "active", closed: false });
     expect(await item(onion)).toEqual({ quantity: "2.00", status: "active", closed: false });
 
-    const { rows: events } = await db.query<{ delta: string; type: string; created_by: string }>(
-      `select quantity_delta::text as delta, type, created_by from public.item_events
-       order by quantity_delta`,
+    const { rows: events } = await db.query<{
+      delta: string;
+      recipe_id: string;
+      created_by: string;
+    }>(
+      `select quantity_delta::text as delta, recipe_id, created_by from public.item_events
+       where type = 'cooked' order by quantity_delta`,
     );
     expect(events).toEqual([
-      { delta: "-200.00", type: "cooked", created_by: ME },
-      { delta: "-1.00", type: "cooked", created_by: ME },
+      { delta: "-200.00", recipe_id: "jeyuk", created_by: ME },
+      { delta: "-1.00", recipe_id: "jeyuk", created_by: ME },
     ]);
 
     const { rows: logs } = await db.query<{ cooked_by: string }>(

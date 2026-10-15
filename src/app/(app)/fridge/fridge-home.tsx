@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
+import { ItemList, UrgencyBadges } from "@/components/item-list";
 import { useFridge } from "@/lib/repo/fridge-context";
 
 /**
@@ -27,7 +28,16 @@ export function FridgeHome() {
           {error}
         </p>
       )}
-      {snapshot && <p className="text-neutral-600">재료 {snapshot.items.length}개</p>}
+      {/* snapshot은 브라우저에서만 채워지므로 오늘 날짜를 읽는 목록은 prerender되지 않는다. */}
+      {snapshot && (
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <UrgencyBadges items={snapshot.items} />
+            <p className="shrink-0 text-sm text-neutral-500">재료 {snapshot.items.length}개</p>
+          </div>
+          <ItemList items={snapshot.items} />
+        </>
+      )}
 
       <button
         type="button"

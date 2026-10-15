@@ -40,9 +40,6 @@ describe("RLS 정책", () => {
     db = await createTestDb();
     alice = await seedUser(db, ALICE);
     bob = await seedUser(db, BOB);
-    await db.exec(`insert into public.ingredients
-      (id, name, category, default_unit, use_per_recipe, shelf_fridge_days, default_storage)
-      values ('onion', '양파', 'vegetable', 'ea', 1, 30, 'room')`);
   });
 
   it("내 냉장고의 재료만 보인다", async () => {
@@ -135,7 +132,7 @@ describe("RLS 정책", () => {
       const items = await tx.query(`select id from public.fridge_items`);
       return { ingredients: ingredients.rows.length, items: items.rows.length };
     });
-    expect(result.ingredients).toBe(1);
+    expect(result.ingredients).toBeGreaterThanOrEqual(150);
     expect(result.items).toBe(0);
   });
 

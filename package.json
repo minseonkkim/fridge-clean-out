@@ -2,6 +2,7 @@
   "name": "fridge-clean-out",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,6 +13,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "gen:seed": "node scripts/gen-seed.ts",
     "check": "npm run lint && npm run typecheck && npm run format:check && npm run test"
   },
   "engines": {

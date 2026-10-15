@@ -24,6 +24,8 @@ test.describe("재료 추가 (체험 모드)", () => {
     await expect(sheet.getByText("D-90")).toBeVisible();
 
     await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+    await expect(sheet.getByRole("status")).toHaveText("방금 넣음: 돼지고기 300g");
+    await sheet.getByRole("button", { name: "완료" }).click();
     await expect(sheet).toBeHidden();
     await expect(page.getByText("재료 1개")).toBeVisible();
 
@@ -39,8 +41,26 @@ test.describe("재료 추가 (체험 모드)", () => {
     await sheet.getByRole("combobox", { name: "이름" }).fill("할머니 고추장아찌");
     await expect(sheet.getByText("사전에 없는 재료로 등록돼요")).toBeVisible();
     await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+    await sheet.getByRole("button", { name: "완료" }).click();
 
     await expect(page.getByText("재료 1개")).toBeVisible();
+  });
+
+  test("하나씩 넣을 때 시트가 닫히지 않고 이어서 넣을 수 있다", async ({ page }) => {
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+    const name = sheet.getByRole("combobox", { name: "이름" });
+
+    for (const item of ["양파", "계란", "두부"]) {
+      await name.fill(item);
+      await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+      await expect(name).toHaveValue("");
+      await expect(name).toBeFocused();
+    }
+    await expect(sheet.getByRole("status")).toHaveText("방금 넣음: 양파 1개, 계란 2개, 두부 1팩");
+    await sheet.getByRole("button", { name: "완료" }).click();
+    await expect(page.getByText("재료 3개")).toBeVisible();
   });
 
   test("기한을 직접 고치면 표시되고 권장값으로 되돌릴 수 있다", async ({ page }) => {

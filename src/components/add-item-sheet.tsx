@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useReducer, useState } from "react";
+import { useId, useMemo, useReducer, useRef, useState } from "react";
 import { INGREDIENTS } from "@/data/ingredients";
 import {
   addItemFormReducer,
@@ -37,6 +37,7 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
   const [showSuggestions, setShowSuggestions] = useState(false);
   /** 시트를 연 뒤 넣은 재료 (연속 등록 확인용) */
   const [justAdded, setJustAdded] = useState<string[]>([]);
+  const nameRef = useRef<HTMLInputElement>(null);
   const ids = {
     name: useId(),
     list: useId(),
@@ -57,6 +58,7 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
     dispatch({ type: "reset", today: todayIso() });
     setBulkText("");
     setError(null);
+    setJustAdded([]);
     onClose();
   }
 
@@ -79,7 +81,19 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
     setSaving(true);
     try {
       await addItems(inputs);
-      close();
+      if (mode === "bulk") {
+        close();
+        return;
+      }
+      // 연속 등록: 시트를 닫지 않고 비운 뒤 이름 칸으로 돌아간다.
+      const name = state.ingredient?.name ?? state.query.trim();
+      setJustAdded((list) => [
+        ...list,
+        `${name} ${inputs[0].quantity}${UNIT_LABEL[inputs[0].unit]}`,
+      ]);
+      dispatch({ type: "reset", today: todayIso() });
+      setError(null);
+      nameRef.current?.focus();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -93,18 +107,29 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
       onClose={close}
       title="재료 추가"
       footer={
-        <button
-          type="button"
-          onClick={submit}
-          disabled={saving}
-          className="min-h-12 w-full rounded-xl bg-emerald-600 font-semibold text-white disabled:opacity-50"
-        >
-          {saving
-            ? "넣는 중…"
-            : mode === "bulk" && bulkEntries.length > 0
-              ? `${bulkEntries.length}개 냉장고에 넣기`
-              : "냉장고에 넣기"}
-        </button>
+        <div className="flex gap-2">
+          {justAdded.length > 0 && (
+            <button
+              type="button"
+              onClick={close}
+              className="min-h-12 rounded-xl px-5 font-semibold ring-1 ring-neutral-300"
+            >
+              완료
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={submit}
+            disabled={saving}
+            className="min-h-12 flex-1 rounded-xl bg-emerald-600 font-semibold text-white disabled:opacity-50"
+          >
+            {saving
+              ? "넣는 중…"
+              : mode === "bulk" && bulkEntries.length > 0
+                ? `${bulkEntries.length}개 냉장고에 넣기`
+                : "냉장고에 넣기"}
+          </button>
+        </div>
       }
     >
       <div className="mb-4">
@@ -148,6 +173,7 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
               이름
             </label>
             <input
+              ref={nameRef}
               id={ids.name}
               role="combobox"
               aria-expanded={showSuggestions && suggestions.length > 0}

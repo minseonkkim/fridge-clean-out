@@ -199,6 +199,49 @@ export function closeItem(
   };
 }
 
+/** 요리에 쓴 재료. amount가 null이면 남은 양을 모두 쓴다. */
+export interface CookUsage {
+  itemId: string;
+  amount: number | null;
+}
+
+/**
+ * 요리 완료 (서버 cook_recipe와 같은 규칙).
+ * 하나라도 잘못되면 아무것도 바꾸지 않고 예외를 던진다.
+ */
+export function cookRecipe(
+  data: TrialData,
+  recipeId: string,
+  usages: CookUsage[],
+  clock = systemClock,
+): TrialData {
+  const now = clock.now().toISOString();
+  const items = new Map(data.items.map((i) => [i.id, i]));
+  const newEvents: ItemEvent[] = [];
+
+  for (const usage of usages) {
+    const item = items.get(usage.itemId);
+    if (!item || item.status !== "active") throw new Error("냉장고에 없는 재료입니다.");
+    if (usage.amount !== null && usage.amount <= 0) throw new Error("사용량은 0보다 커야 합니다.");
+    const used = Math.min(usage.amount ?? item.quantity, item.quantity);
+    const quantity = item.quantity - used;
+    items.set(item.id, {
+      ...item,
+      quantity,
+      status: quantity === 0 ? "used_up" : item.status,
+      closedAt: quantity === 0 ? now : item.closedAt,
+      updatedAt: now,
+    });
+    newEvents.push(event(clock, item.id, "cooked", -used, recipeId));
+  }
+
+  return {
+    ...data,
+    items: data.items.map((i) => items.get(i.id) ?? i),
+    events: [...data.events, ...newEvents],
+  };
+}
+
 export function updatePreferences(data: TrialData, patch: Partial<Preferences>): TrialData {
   return { ...data, preferences: { ...data.preferences, ...patch } };
 }

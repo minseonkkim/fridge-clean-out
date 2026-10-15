@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { clearTrial, hasTrialData, loadTrial, type TrialData } from "./trial-store";
 
+/** 업로드가 끝나면 window에 보내는 이벤트. 냉장고 화면이 듣고 다시 불러온다. */
+export const TRIAL_UPLOADED_EVENT = "naengteol:trial-uploaded";
+
 export interface UploadResult {
   items: number;
   events: number;

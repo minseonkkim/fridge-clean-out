@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { uploadTrialData } from "@/lib/trial/upload";
+import { TRIAL_UPLOADED_EVENT, uploadTrialData } from "@/lib/trial/upload";
 
 type Status =
   { kind: "idle" } | { kind: "done"; items: number } | { kind: "error"; message: string };
@@ -25,6 +25,7 @@ export function TrialUploader() {
       running = true;
       try {
         const result = await uploadTrialData(supabase);
+        if (result) window.dispatchEvent(new Event(TRIAL_UPLOADED_EVENT));
         if (result && result.items + result.shopping > 0) {
           setStatus({ kind: "done", items: result.items });
         }

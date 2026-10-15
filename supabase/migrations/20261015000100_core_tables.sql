@@ -156,7 +156,8 @@ create table public.item_events (
   quantity_delta numeric(10, 2),
   recipe_id text references public.recipes (id),
   created_by uuid references public.profiles (id) on delete set null default auth.uid(),
-  created_at timestamptz not null default now()
+  -- 한 트랜잭션 안의 여러 이력도 순서가 보이도록 실제 기록 시각을 쓴다.
+  created_at timestamptz not null default clock_timestamp()
 );
 
 create index item_events_fridge_created_idx on public.item_events (fridge_id, created_at desc);

@@ -5,6 +5,7 @@ import {
   activeItems,
   addItems,
   closeItem,
+  cookRecipe,
   emptyTrial,
   hasTrialData,
   loadTrial,
@@ -92,6 +93,49 @@ describe("체험 데이터 저장소", () => {
     const clock = fakeClock();
     const data = closeItem(addItems(emptyTrial(), [onion], clock), "id-1", "used_up", clock);
     expect(closeItem(data, "id-1", "discarded", clock)).toBe(data);
+  });
+
+  it("요리 완료는 쓴 만큼 줄이고, 다 쓰면 used_up, cooked 이력을 남긴다", () => {
+    const clock = fakeClock();
+    let data = addItems(
+      emptyTrial(),
+      [onion, { ...onion, ingredientId: "pork", unit: "g", quantity: 600 }],
+      clock,
+    );
+    data = cookRecipe(
+      data,
+      "jeyuk_bokkeum",
+      [
+        { itemId: "id-1", amount: null },
+        { itemId: "id-2", amount: 300 },
+      ],
+      clock,
+    );
+    expect(data.items.map((i) => [i.quantity, i.status])).toEqual([
+      [0, "used_up"],
+      [300, "active"],
+    ]);
+    expect(data.events.slice(-2).map((e) => [e.type, e.quantityDelta, e.recipeId])).toEqual([
+      ["cooked", -3, "jeyuk_bokkeum"],
+      ["cooked", -300, "jeyuk_bokkeum"],
+    ]);
+  });
+
+  it("요리 완료 중 하나라도 잘못되면 아무것도 바뀌지 않는다", () => {
+    const clock = fakeClock();
+    const data = addItems(emptyTrial(), [onion], clock);
+    expect(() =>
+      cookRecipe(
+        data,
+        "x",
+        [
+          { itemId: "id-1", amount: 1 },
+          { itemId: "missing", amount: 1 },
+        ],
+        clock,
+      ),
+    ).toThrow(/없는 재료/);
+    expect(data.items[0].quantity).toBe(3);
   });
 
   it("저장하고 다시 불러오면 같은 데이터다", () => {

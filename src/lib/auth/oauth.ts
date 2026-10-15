@@ -1,6 +1,7 @@
 "use client";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { clearTrial } from "@/lib/trial/trial-store";
 import { safeNextPath } from "./redirect";
 
 /** 결정 D2: 첫 출시는 카카오·구글만 */
@@ -33,4 +34,14 @@ export async function signInWithProvider(provider: OAuthProvider, next?: string)
 export async function signOut() {
   const { error } = await getSupabaseBrowserClient().auth.signOut();
   if (error) throw error;
+}
+
+/** 회원 탈퇴: 계정과 냉장고 데이터를 모두 지우고 이 기기의 세션·체험 데이터도 정리한다. */
+export async function deleteMyAccount() {
+  const supabase = getSupabaseBrowserClient();
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) throw new Error(`탈퇴하지 못했습니다: ${error.message}`);
+  // 서버에서 사용자가 지워졌으므로 로컬 세션만 정리한다.
+  await supabase.auth.signOut({ scope: "local" });
+  clearTrial();
 }

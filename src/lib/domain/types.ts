@@ -52,6 +52,43 @@ export const CATEGORY_LABEL: Record<IngredientCategory, string> = {
 /** 보관 기한 출처 코드 (docs/데이터 출처 확인.md) */
 export type IngredientSource = "mfds" | "usda-foodkeeper" | "seoul-nutri" | "manual";
 
+/** 가스레인지·냄비·프라이팬은 있다고 가정한다. 이 셋만 온보딩에서 묻는다. */
+export type Tool = "microwave" | "air_fryer" | "oven";
+
+export const TOOL_LABEL: Record<Tool, string> = {
+  microwave: "전자레인지",
+  air_fryer: "에어프라이어",
+  oven: "오븐",
+};
+
+export interface RecipeStep {
+  text: string;
+  timerSec?: number;
+}
+
+/** 레시피 재료 한 줄. 같은 groupNo끼리는 서로 대체할 수 있다. */
+export interface RecipeIngredient {
+  groupNo: number;
+  ingredientId: string;
+  required: boolean;
+  amount: number;
+  unit: Unit;
+}
+
+/** 레시피 (DB recipes + recipe_ingredients) */
+export interface Recipe {
+  id: string;
+  name: string;
+  minutes: number;
+  difficulty: 1 | 2 | 3;
+  servings: number;
+  tools: Tool[];
+  steps: RecipeStep[];
+  ingredients: RecipeIngredient[];
+  imageKey: string | null;
+  source: string;
+}
+
 /** 재료 사전 항목 (DB ingredients 테이블과 1:1) */
 export interface Ingredient {
   id: string;

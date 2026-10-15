@@ -1,5 +1,6 @@
 import { INGREDIENTS } from "./ingredients.ts";
-import type { Ingredient } from "../lib/domain/types.ts";
+import { RECIPES } from "./recipes.ts";
+import type { Ingredient, Recipe } from "../lib/domain/types.ts";
 
 function str(value: string | null): string {
   return value === null ? "null" : `'${value.replaceAll("'", "''")}'`;
@@ -25,6 +26,57 @@ function ingredientRow(i: Ingredient): string {
     str(i.source),
     String(i.isPantryStaple),
   ].join(", ")})`;
+}
+
+function recipeRow(r: Recipe): string {
+  return `  (${[
+    str(r.id),
+    str(r.name),
+    String(r.minutes),
+    String(r.difficulty),
+    String(r.servings),
+    textArray(r.tools),
+    `${str(JSON.stringify(r.steps))}::jsonb`,
+    str(r.imageKey),
+    str(r.source),
+  ].join(", ")})`;
+}
+
+/** 레시피 시드 SQL. 레시피 재료는 해당 레시피 것을 지우고 다시 넣는다. */
+export function recipesSeedSql(recipes: Recipe[] = RECIPES): string {
+  const ingredientRows = recipes.flatMap((r) =>
+    r.ingredients.map(
+      (ri) =>
+        `  (${[
+          str(r.id),
+          String(ri.groupNo),
+          str(ri.ingredientId),
+          String(ri.required),
+          String(ri.amount),
+          str(ri.unit),
+        ].join(", ")})`,
+    ),
+  );
+  return `-- 자동 생성 파일: 직접 고치지 말 것. src/data/recipes.ts를 고친 뒤 npm run gen:seed
+-- 레시피 ${recipes.length}개, 레시피 재료 ${ingredientRows.length}줄
+
+insert into public.recipes (id, name, minutes, difficulty, servings, tools, steps, image_key, source) values
+${recipes.map(recipeRow).join(",\n")}
+on conflict (id) do update set
+  name = excluded.name,
+  minutes = excluded.minutes,
+  difficulty = excluded.difficulty,
+  servings = excluded.servings,
+  tools = excluded.tools,
+  steps = excluded.steps,
+  image_key = excluded.image_key,
+  source = excluded.source;
+
+delete from public.recipe_ingredients where recipe_id in (${recipes.map((r) => str(r.id)).join(", ")});
+
+insert into public.recipe_ingredients (recipe_id, group_no, ingredient_id, required, amount, unit) values
+${ingredientRows.join(",\n")};
+`;
 }
 
 /** 재료 사전 시드 SQL. 다시 실행해도 같은 결과가 되도록 upsert 한다. */

@@ -55,6 +55,22 @@ test.describe("재료 추가 (체험 모드)", () => {
     await expect(sheet.getByText("D-35")).toBeVisible();
   });
 
+  test("여러 재료를 한 줄로 한 번에 넣는다", async ({ page }) => {
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+
+    await sheet.getByRole("radio", { name: "한 번에 여러 개" }).click();
+    await sheet.getByRole("textbox").fill("양파 3, 두부 1, 계란 10, 돼지고기 600g");
+    const preview = sheet.getByRole("list", { name: "넣을 재료 미리보기" });
+    await expect(preview.getByRole("listitem")).toHaveCount(4);
+    await expect(preview).toContainText("600g");
+
+    await sheet.getByRole("button", { name: "4개 냉장고에 넣기" }).click();
+    await expect(sheet).toBeHidden();
+    await expect(page.getByText("재료 4개")).toBeVisible();
+  });
+
   test("이름 없이 넣으면 안내한다", async ({ page }) => {
     await page.goto("/fridge");
     await page.getByRole("button", { name: "재료 추가" }).click();

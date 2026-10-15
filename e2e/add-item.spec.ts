@@ -1,0 +1,65 @@
+import { expect, test } from "@playwright/test";
+
+test.describe("재료 추가 (체험 모드)", () => {
+  test("별칭으로 찾아 넣으면 냉장고에 들어가고 새로고침해도 남는다", async ({ page }) => {
+    await page.goto("/fridge");
+    await expect(page.getByText("재료 0개")).toBeVisible();
+
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole("combobox", { name: "이름" }).fill("삼겹");
+    await sheet.getByRole("option").filter({ hasText: "돼지고기" }).first().click();
+
+    await expect(sheet.getByRole("radio", { name: "냉장" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(sheet.getByLabel("수량")).toHaveValue("300");
+    await expect(sheet.getByText("D-3")).toBeVisible();
+
+    // 냉동으로 바꾸면 기한이 다시 계산된다
+    await sheet.getByRole("radio", { name: "냉동" }).click();
+    await expect(sheet.getByText("D-90")).toBeVisible();
+
+    await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+    await expect(sheet).toBeHidden();
+    await expect(page.getByText("재료 1개")).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText("재료 1개")).toBeVisible();
+  });
+
+  test("사전에 없는 재료도 이름으로 넣을 수 있다", async ({ page }) => {
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+
+    await sheet.getByRole("combobox", { name: "이름" }).fill("할머니 고추장아찌");
+    await expect(sheet.getByText("사전에 없는 재료로 등록돼요")).toBeVisible();
+    await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+
+    await expect(page.getByText("재료 1개")).toBeVisible();
+  });
+
+  test("기한을 직접 고치면 표시되고 권장값으로 되돌릴 수 있다", async ({ page }) => {
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+
+    await sheet.getByRole("combobox", { name: "이름" }).fill("계란");
+    await sheet.getByLabel(/^기한/).fill("2099-01-01");
+    await expect(sheet.getByText("직접 정한 기한이에요")).toBeVisible();
+    await sheet.getByRole("button", { name: "권장 기한으로 되돌리기" }).click();
+    await expect(sheet.getByText("D-35")).toBeVisible();
+  });
+
+  test("이름 없이 넣으면 안내한다", async ({ page }) => {
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+    await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+    await expect(sheet.getByRole("alert")).toHaveText("재료 이름을 입력해 주세요.");
+  });
+});

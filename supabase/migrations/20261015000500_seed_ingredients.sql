@@ -10,7 +10,7 @@ insert into public.ingredients (
   ('green_onion', '대파', 'vegetable', array['파', '흰대파']::text[], 'ea', 0.5, 14, 90, 0, 'fridge', 'green_onion', 'manual', false),
   ('scallion', '쪽파', 'vegetable', array['실파']::text[], 'bunch', 0.3, 7, 60, 0, 'fridge', 'scallion', 'manual', false),
   ('garlic', '마늘', 'vegetable', array['깐마늘', '통마늘']::text[], 'g', 15, 21, 180, 0, 'fridge', 'garlic', 'manual', false),
-  ('minced_garlic', '다진 마늘', 'vegetable', array['간마늘']::text[], 'g', 15, 14, 90, 0, 'fridge', 'minced_garlic', 'manual', false),
+  ('minced_garlic', '다진 마늘', 'vegetable', array['간마늘']::text[], 'g', 15, 14, 90, 0, 'fridge', 'minced_garlic', 'manual', true),
   ('ginger', '생강', 'vegetable', array['다진 생강']::text[], 'g', 10, 21, 180, 0, 'fridge', 'ginger', 'manual', false),
   ('potato', '감자', 'vegetable', array['햇감자', '알감자']::text[], 'ea', 1, 0, 0, 30, 'room', 'potato', 'manual', false),
   ('sweet_potato', '고구마', 'vegetable', array['밤고구마', '호박고구마']::text[], 'ea', 1, 0, 0, 21, 'room', 'sweet_potato', 'manual', false),

@@ -53,7 +53,17 @@ export const INGREDIENTS: Ingredient[] = [
   ing("green_onion", "대파", "vegetable", "ea", 0.5, [14, 90, 0], "fridge", ["파", "흰대파"]),
   ing("scallion", "쪽파", "vegetable", "bunch", 0.3, [7, 60, 0], "fridge", ["실파"]),
   ing("garlic", "마늘", "vegetable", "g", 15, [21, 180, 0], "fridge", ["깐마늘", "통마늘"]),
-  ing("minced_garlic", "다진 마늘", "vegetable", "g", 15, [14, 90, 0], "fridge", ["간마늘"]),
+  ing(
+    "minced_garlic",
+    "다진 마늘",
+    "vegetable",
+    "g",
+    15,
+    [14, 90, 0],
+    "fridge",
+    ["간마늘"],
+    staple,
+  ),
   ing("ginger", "생강", "vegetable", "g", 10, [21, 180, 0], "fridge", ["다진 생강"]),
   ing("potato", "감자", "vegetable", "ea", 1, [0, 0, 30], "room", ["햇감자", "알감자"]),
   ing("sweet_potato", "고구마", "vegetable", "ea", 1, [0, 0, 21], "room", [

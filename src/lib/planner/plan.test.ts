@@ -94,6 +94,14 @@ describe("buildPlan", () => {
     expect(plan.wasted.map((w) => w.itemId)).toEqual(["sprouts"]);
   });
 
+  it("더 만들 요리가 없어 멈췄으면 곧 상할 남은 재료도 위험으로 알린다", () => {
+    // 콩나물 1kg: 콩나물무침(200g)만 가능하고 4일 안에 반복할 수 없다 → 800g이 남는다 (기한 3일)
+    const items = [item("sprouts", "bean_sprouts", 1000, "g", 3)];
+    const plan = buildPlan(items, options({ recipes: recipes("kongnamul_muchim") }));
+    expect(plan.stoppedEarly).toBe(true);
+    expect(plan.wasted).toEqual([expect.objectContaining({ itemId: "sprouts", quantity: 800 })]);
+  });
+
   it("이미 기한이 지난 재료는 계획에 쓰지 않고 표시한다", () => {
     const items = [item("old", "bean_sprouts", 200, "g", -2), item("egg", "egg", 10, "ea", 30)];
     const plan = buildPlan(items, options({ recipes: recipes("kongnamul_muchim", "egg_roll") }));

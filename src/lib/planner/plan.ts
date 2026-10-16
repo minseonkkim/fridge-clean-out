@@ -186,9 +186,12 @@ export function buildPlan(items: FridgeItem[], options: PlanOptions): Plan {
   // 버려질 위험을 보는 기간: 정한 기간, '버틸 수 있는 만큼'이면 계획한 날과 최소 일주일 중 긴 쪽
   const horizonDays = horizon === "max" ? Math.max(plannedDays, 7) : horizon;
   // 계획이 끝난 뒤에도 기간 안에 기한이 오는 남은 재료는 버려질 위험이다.
+  // 만들 요리가 없어 멈췄다면, 3일 안에 기한이 오는 남은 재료도 쓸 길이 없으므로 포함한다.
+  const SOON = 3;
   for (const [id, qty] of remaining) {
     if (qty <= 0) continue;
-    if (left.get(id)! < horizonDays) {
+    const l = left.get(id)!;
+    if (l < horizonDays || (stoppedEarly && l <= SOON)) {
       const item = byId.get(id)!;
       if (isStaple(item)) continue;
       wasted.push({

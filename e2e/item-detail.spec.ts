@@ -45,6 +45,22 @@ test.describe("재료 상세 시트", () => {
     expect(value).toBeLessThanOrEqual(450);
   });
 
+  test("다 씀·버림을 누르면 냉장고에서 빠지고 알려 준다", async ({ page }) => {
+    await page.getByRole("button", { name: /양파/ }).click();
+    await page.getByRole("dialog", { name: "양파" }).getByRole("button", { name: /다 씀/ }).click();
+    await expect(page.getByRole("status").filter({ hasText: "양파를 다 썼어요." })).toBeVisible();
+
+    await page.getByRole("button", { name: /돼지고기/ }).click();
+    await page
+      .getByRole("dialog", { name: "돼지고기" })
+      .getByRole("button", { name: /버림/ })
+      .click();
+    await expect(page.getByText("냉장고가 비어 있어요")).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByText("냉장고가 비어 있어요")).toBeVisible();
+  });
+
   test("냉동으로 옮기면 기한과 칸이 바뀐다", async ({ page }) => {
     await page.getByRole("button", { name: /돼지고기/ }).click();
     const sheet = page.getByRole("dialog", { name: "돼지고기" });

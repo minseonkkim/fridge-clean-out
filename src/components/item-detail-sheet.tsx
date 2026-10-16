@@ -7,6 +7,7 @@ import { itemDisplayName, type FridgeItem, type ItemPatch } from "@/lib/domain/f
 import { SLOT_LABEL, slotOf } from "@/lib/domain/fridge-view";
 import { diffPatch, stepQuantity, storageChangePatch } from "@/lib/domain/item-edit";
 import { STORAGE_LABEL, STORAGES, UNIT_LABEL, type Storage } from "@/lib/domain/types";
+import { josa } from "@/lib/korean";
 import { useFridge } from "@/lib/repo/fridge-context";
 import { BottomSheet } from "./bottom-sheet";
 import { Segmented } from "./segmented";
@@ -16,8 +17,17 @@ const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 const STORAGE_OPTIONS = STORAGES.map((s) => ({ value: s, label: STORAGE_LABEL[s] }));
 
 /** 재료 상세 시트 (기획서 4장): D-day, 수량 스테퍼, 보관 방식 변경, 메모 */
-export function ItemDetailSheet({ item, onClose }: { item: FridgeItem; onClose: () => void }) {
-  const { updateItem } = useFridge();
+export function ItemDetailSheet({
+  item,
+  onClose,
+  onClosed,
+}: {
+  item: FridgeItem;
+  onClose: () => void;
+  /** 다 씀·버림으로 냉장고에서 뺐을 때 알림 문구 */
+  onClosed?: (message: string) => void;
+}) {
+  const { updateItem, closeItem } = useFridge();
   const ingredient = item.ingredientId ? lookup(item.ingredientId) : undefined;
   const today = todayIso();
   const ids = { memo: useId(), exp: useId() };
@@ -43,6 +53,24 @@ export function ItemDetailSheet({ item, onClose }: { item: FridgeItem; onClose: 
   };
   const patch = diffPatch(item, draft);
   const dirty = Object.keys(patch).length > 0;
+
+  async function finish(status: "used_up" | "discarded") {
+    setSaving(true);
+    setError(null);
+    try {
+      await closeItem(item.id, status);
+      const name = itemDisplayName(item, lookup);
+      onClosed?.(
+        status === "used_up"
+          ? `${josa(name, "을", "를")} 다 썼어요.`
+          : `${josa(name, "을", "를")} 버렸어요.`,
+      );
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setSaving(false);
+    }
+  }
 
   async function save() {
     if (!dirty) return onClose();
@@ -137,6 +165,25 @@ export function ItemDetailSheet({ item, onClose }: { item: FridgeItem; onClose: 
             onChange={(e) => setMemo(e.target.value)}
             className="rounded-xl border border-neutral-300 p-3 text-base dark:border-neutral-700 dark:bg-neutral-800"
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => finish("used_up")}
+            className="min-h-12 rounded-xl bg-emerald-50 font-semibold text-emerald-800 disabled:opacity-50 dark:bg-emerald-950 dark:text-emerald-200"
+          >
+            🍽 다 씀
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => finish("discarded")}
+            className="min-h-12 rounded-xl bg-neutral-100 font-semibold text-neutral-700 disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-300"
+          >
+            🗑 버림
+          </button>
         </div>
 
         {error && (

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
 import { ItemDetailSheet } from "@/components/item-detail-sheet";
 import { ItemList, UrgencyBadges } from "@/components/item-list";
+import { useToast } from "@/components/toast";
 import { useFridge } from "@/lib/repo/fridge-context";
 
 /**
@@ -15,6 +16,7 @@ export function FridgeHome() {
   const [adding, setAdding] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = snapshot?.items.find((i) => i.id === selectedId) ?? null;
+  const { show, toast } = useToast();
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pt-6 pb-28">
@@ -53,8 +55,14 @@ export function FridgeHome() {
       {/* 열 때만 마운트한다: 오늘 날짜를 읽으므로 미리 렌더링(prerender)에 포함되면 안 된다. */}
       {adding && <AddItemSheet open onClose={() => setAdding(false)} />}
       {selected && (
-        <ItemDetailSheet key={selected.id} item={selected} onClose={() => setSelectedId(null)} />
+        <ItemDetailSheet
+          key={selected.id}
+          item={selected}
+          onClose={() => setSelectedId(null)}
+          onClosed={show}
+        />
       )}
+      {toast}
     </main>
   );
 }

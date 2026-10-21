@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { StepTimer } from "@/components/step-timer";
+import { CookButton } from "./cook-button";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { RECIPE_BY_ID } from "@/data/recipes";
 import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
@@ -111,6 +112,13 @@ function IngredientList({
           ? "지금 냉장고 재료로 만들 수 있어요"
           : `필수 재료 ${availability.missingRequired}가지가 없어요`}
       </p>
+      <CookButton
+        recipe={recipe}
+        items={items}
+        disabledPantry={disabledPantry}
+        servings={servings}
+        canCook={availability.canCook}
+      />
       <ul aria-label="필수 재료" className="divide-y divide-neutral-100 dark:divide-neutral-800">
         {required.map((g) => (
           <GroupRow key={g.groupNo} group={g} />

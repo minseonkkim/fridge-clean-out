@@ -14,5 +14,8 @@ export default defineConfig({
     // PGlite(WASM Postgres) 초기화가 느릴 수 있다.
     testTimeout: 30_000,
     hookTimeout: 60_000,
+    // PGlite를 쓰는 DB 테스트가 한꺼번에 많이 뜨면 Windows에서 작업 프로세스가 죽는다.
+    // 동시 실행 수를 줄여 안정적으로 돌린다.
+    maxWorkers: 4,
   },
 });

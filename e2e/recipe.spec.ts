@@ -29,6 +29,20 @@ test.describe("레시피 상세", () => {
     );
   });
 
+  test("단계별 조리법과 타이머를 보여 준다", async ({ page }) => {
+    await page.clock.install();
+    await page.goto("/recipes/kimchi_stew");
+    const steps = page.getByRole("list").filter({ hasText: "물 400ml를 붓고" });
+    await expect(steps.getByRole("listitem")).toHaveCount(4);
+
+    const timer = page.getByRole("button", { name: "타이머 시작, 10:00" });
+    await timer.click();
+    await page.clock.runFor(3_000);
+    await expect(page.getByRole("button", { name: /타이머 일시정지, 9:57 남음/ })).toBeVisible();
+    await page.clock.runFor(600_000);
+    await expect(page.getByRole("button", { name: "타이머 다시 시작" })).toHaveText(/다 됐어요/);
+  });
+
   test("식단 카드에서 레시피로 들어가면 만들 수 있다고 나온다", async ({ page }) => {
     await addBulk(page, "김치 500g, 돼지고기 300g", 2);
     await page.goto("/plan");

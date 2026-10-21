@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { StepTimer } from "@/components/step-timer";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { RECIPE_BY_ID } from "@/data/recipes";
 import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
@@ -45,6 +46,28 @@ export function RecipeDetail({ recipeId }: { recipeId: string }) {
         ) : (
           <p className="text-neutral-500">냉장고를 확인하는 중…</p>
         )}
+      </section>
+
+      <section aria-labelledby="steps-heading" className="flex flex-col gap-2">
+        <h2 id="steps-heading" className="font-semibold">
+          만드는 법 <span className="font-normal text-neutral-500">· 약 {recipe.minutes}분</span>
+        </h2>
+        <ol className="flex flex-col gap-3">
+          {recipe.steps.map((step, i) => (
+            <li key={i} className="flex gap-3">
+              <span
+                aria-hidden
+                className="grid size-7 shrink-0 place-items-center rounded-full bg-emerald-600 text-sm font-bold text-white"
+              >
+                {i + 1}
+              </span>
+              <div className="flex-1 pt-0.5">
+                <p>{step.text}</p>
+                {step.timerSec && <StepTimer seconds={step.timerSec} />}
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
     </main>
   );

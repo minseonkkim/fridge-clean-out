@@ -155,7 +155,7 @@ function ShoppingBody({ items }: { items: FridgeItem[] }) {
         </section>
       )}
 
-      <ShoppingList />
+      <ShoppingList onMoved={show} />
       {toast}
     </>
   );

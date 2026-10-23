@@ -53,6 +53,27 @@ test.describe("장보기", () => {
     await expect(page.getByRole("list", { name: "장보기 목록" })).toHaveCount(0);
   });
 
+  test("체크한 항목을 냉장고에 넣으면 목록에서 빠지고 냉장고에 들어간다", async ({ page }) => {
+    await addBulk(page, "김치 500g", 1);
+    await page.goto("/shopping");
+    await page.getByRole("button", { name: "김치찌개에 필요한 재료 담기" }).click();
+
+    const list = page.getByRole("list", { name: "장보기 목록" });
+    await list.getByRole("checkbox").first().check();
+    await page.getByRole("button", { name: "체크한 1개 냉장고에 넣기" }).click();
+    await expect(
+      page.getByRole("status").filter({ hasText: "1개를 냉장고에 넣었어요" }),
+    ).toBeVisible();
+    await expect(list).toHaveCount(0);
+
+    await page.goto("/fridge");
+    await expect(page.getByRole("region", { name: /아래 선반/ })).toContainText("돼지고기");
+
+    // 이제 김치찌개를 만들 수 있다
+    await page.goto("/recipes/kimchi_stew");
+    await expect(page.getByRole("button", { name: "요리 완료" })).toBeEnabled();
+  });
+
   test("빈 냉장고면 안내한다", async ({ page }) => {
     await page.goto("/shopping");
     await expect(page.getByText("하나만 사서 새로 만들 수 있는 요리가 없어요")).toBeVisible();

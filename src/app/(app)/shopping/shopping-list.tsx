@@ -1,14 +1,33 @@
 "use client";
 
+import { useState } from "react";
+import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { RECIPE_BY_ID } from "@/data/recipes";
+import { todayIso } from "@/lib/domain/expiry";
 import { UNIT_LABEL } from "@/lib/domain/types";
 import { useFridge } from "@/lib/repo/fridge-context";
+import { shoppingToFridgeInputs } from "@/lib/shopping/to-fridge";
+
+const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
 /** 내 장보기 목록: 체크하며 장을 보고, 필요 없는 항목은 뺀다. */
-export function ShoppingList() {
-  const { snapshot, setShoppingChecked, removeShopping } = useFridge();
+export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void }) {
+  const { snapshot, setShoppingChecked, removeShopping, addItems } = useFridge();
+  const [moving, setMoving] = useState(false);
   const shopping = snapshot?.shopping ?? [];
   const checked = shopping.filter((s) => s.checked);
+
+  /** 체크한(산) 항목을 냉장고에 넣고 목록에서 뺀다. */
+  async function moveToFridge() {
+    setMoving(true);
+    try {
+      await addItems(shoppingToFridgeInputs(checked, lookup, todayIso()));
+      await removeShopping(checked.map((s) => s.id));
+      onMoved?.(`${checked.length}개를 냉장고에 넣었어요. 기한은 오늘 기준 권장값이에요.`);
+    } finally {
+      setMoving(false);
+    }
+  }
 
   return (
     <section aria-labelledby="list-heading" className="flex flex-col gap-2">
@@ -19,6 +38,16 @@ export function ShoppingList() {
             {checked.length}/{shopping.length}
           </span>
         </h2>
+        {checked.length > 0 && (
+          <button
+            type="button"
+            onClick={moveToFridge}
+            disabled={moving}
+            className="min-h-11 rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {moving ? "넣는 중…" : `체크한 ${checked.length}개 냉장고에 넣기`}
+          </button>
+        )}
       </div>
       {shopping.length === 0 ? (
         <p className="text-sm text-neutral-500">위 추천에서 담거나, 필요한 재료를 담아 두세요.</p>

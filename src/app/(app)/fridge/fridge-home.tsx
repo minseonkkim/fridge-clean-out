@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
 import { ItemDetailSheet } from "@/components/item-detail-sheet";
@@ -36,6 +37,24 @@ export function FridgeHome() {
       {/* snapshot은 브라우저에서만 채워지므로 오늘 날짜를 읽는 목록은 prerender되지 않는다. */}
       {snapshot && (
         <>
+          {!snapshot.preferences.onboardedAt && (
+            <Link
+              href="/onboarding"
+              className="flex items-center justify-between gap-3 rounded-2xl bg-emerald-50 p-4 dark:bg-emerald-950"
+            >
+              <span>
+                <span className="block font-semibold text-emerald-900 dark:text-emerald-100">
+                  1분 설정하고 맞춤 식단 받기
+                </span>
+                <span className="text-sm text-emerald-800 dark:text-emerald-200">
+                  끼니 수, 못 먹는 재료, 조리도구, 지금 있는 재료
+                </span>
+              </span>
+              <span aria-hidden className="text-xl text-emerald-700">
+                ›
+              </span>
+            </Link>
+          )}
           <div className="flex items-center justify-between gap-2">
             <UrgencyBadges items={snapshot.items} />
             <p className="shrink-0 text-sm text-neutral-500">재료 {snapshot.items.length}개</p>

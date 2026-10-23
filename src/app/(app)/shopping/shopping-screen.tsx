@@ -10,6 +10,7 @@ import { useFridge } from "@/lib/repo/fridge-context";
 import type { MissingGroup } from "@/lib/shopping/suggest";
 import { useShoppingSuggestions } from "@/lib/shopping/use-shopping";
 import { ShoppingList } from "./shopping-list";
+import { SimulationCard } from "./simulation-card";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 const nameOf = (id: string) => lookup(id)?.name ?? id;
@@ -155,6 +156,11 @@ function ShoppingBody({ items }: { items: FridgeItem[] }) {
         </section>
       )}
 
+      <SimulationCard
+        items={items}
+        shopping={snapshot!.shopping}
+        preferences={snapshot!.preferences}
+      />
       <ShoppingList onMoved={show} />
       {toast}
     </>

@@ -74,6 +74,30 @@ test.describe("장보기", () => {
     await expect(page.getByRole("button", { name: "요리 완료" })).toBeEnabled();
   });
 
+  test("목록대로 사면 식단이 어떻게 바뀌는지 미리 보여 준다", async ({ page }) => {
+    // 김치는 내일까지라 지금은 버려질 위험, 돼지고기를 사면 김치찌개로 살린다
+    await addBulk(page, "김치 200g", 1);
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: /배추김치/ }).click();
+    const detail = page.getByRole("dialog", { name: "배추김치" });
+    const tomorrow = await page.evaluate(() => {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    });
+    await detail.getByLabel("기한").fill(tomorrow);
+    await detail.getByRole("button", { name: "저장" }).click();
+
+    await page.goto("/shopping");
+    await expect(page.getByRole("region", { name: "목록대로 사면" })).toHaveCount(0);
+    await page.getByRole("button", { name: "김치찌개에 필요한 재료 담기" }).click();
+
+    const sim = page.getByRole("region", { name: "목록대로 사면" });
+    await expect(sim).toContainText("0 → 1끼");
+    await expect(sim).toContainText("1 → 0개");
+    await expect(sim).toContainText("배추김치을(를) 버리지 않게 돼요.");
+  });
+
   test("빈 냉장고면 안내한다", async ({ page }) => {
     await page.goto("/shopping");
     await expect(page.getByText("하나만 사서 새로 만들 수 있는 요리가 없어요")).toBeVisible();

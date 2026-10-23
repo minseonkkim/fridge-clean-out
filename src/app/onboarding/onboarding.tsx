@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { Chip, toggle } from "@/components/chip";
 import { Segmented } from "@/components/segmented";
 import { INGREDIENT_BY_ID, INGREDIENTS } from "@/data/ingredients";
 import { bulkToInputs } from "@/lib/domain/bulk-parse";
@@ -32,35 +33,6 @@ const COMMON_BUYS = [
 ];
 const TOOLS: Tool[] = ["microwave", "air_fryer", "oven"];
 const STEPS = ["식사", "못 먹는 재료", "조리도구", "자주 사는 재료"] as const;
-
-function Chip({
-  selected,
-  onClick,
-  children,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`min-h-11 rounded-full px-4 text-sm font-semibold ring-1 ${
-        selected
-          ? "bg-emerald-600 text-white ring-emerald-600"
-          : "bg-white text-neutral-700 ring-neutral-300 dark:bg-neutral-900 dark:text-neutral-200 dark:ring-neutral-700"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function toggle<T>(list: T[], value: T): T[] {
-  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
-}
 
 /**
  * 온보딩 (기획서 4장): 가구 인원, 하루 요리 끼니, 못 먹는 재료, 가진 조리도구,

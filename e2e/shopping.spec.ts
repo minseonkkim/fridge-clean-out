@@ -1,0 +1,60 @@
+import { expect, test, type Page } from "@playwright/test";
+
+async function addBulk(page: Page, text: string, count: number) {
+  await page.goto("/fridge");
+  await page.getByRole("button", { name: "재료 추가" }).click();
+  const sheet = page.getByRole("dialog", { name: "재료 추가" });
+  await sheet.getByRole("radio", { name: "한 번에 여러 개" }).click();
+  await sheet.getByRole("textbox").fill(text);
+  await sheet.getByRole("button", { name: `${count}개 냉장고에 넣기` }).click();
+  await expect(sheet).toBeHidden();
+}
+
+test.describe("장보기", () => {
+  test("하나만 사면 되는 재료를 추천하고 목록에 담는다", async ({ page }) => {
+    await addBulk(page, "김치 500g", 1);
+    await page.goto("/shopping");
+
+    const buyOne = page.getByRole("region", { name: "딱 하나만 산다면" });
+    await expect(buyOne.getByRole("listitem").first()).toBeVisible();
+    // 김치찌개는 돼지고기/참치캔/캔햄 중 하나만 있으면 된다
+    await expect(buyOne).toContainText("김치찌개");
+
+    await buyOne.getByRole("button", { name: "돼지고기 장보기에 담기" }).click();
+    await expect(
+      page.getByRole("status").filter({ hasText: "장보기 목록에 1개 담았어요." }),
+    ).toBeVisible();
+    const list = page.getByRole("list", { name: "장보기 목록" });
+    await expect(list).toContainText("돼지고기");
+
+    // 같은 재료는 다시 담지 않는다
+    await buyOne.getByRole("button", { name: "돼지고기 장보기에 담기" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "이미 목록에 있어요." })).toBeVisible();
+    await expect(list.getByRole("listitem")).toHaveCount(1);
+  });
+
+  test("요리에 부족한 재료를 한 번에 담고, 체크하고, 뺀다", async ({ page }) => {
+    await addBulk(page, "김치 500g", 1);
+    await page.goto("/shopping");
+
+    await page.getByRole("button", { name: "김치찌개에 필요한 재료 담기" }).click();
+    const list = page.getByRole("list", { name: "장보기 목록" });
+    await expect(list).toContainText("돼지고기150g김치찌개용");
+
+    await list.getByRole("checkbox").first().check();
+    await expect(page.getByRole("heading", { name: /내 장보기 목록/ })).toContainText("1/1");
+
+    await page.reload();
+    await expect(
+      page.getByRole("list", { name: "장보기 목록" }).getByRole("checkbox").first(),
+    ).toBeChecked();
+
+    await page.getByRole("button", { name: "돼지고기 목록에서 빼기" }).click();
+    await expect(page.getByRole("list", { name: "장보기 목록" })).toHaveCount(0);
+  });
+
+  test("빈 냉장고면 안내한다", async ({ page }) => {
+    await page.goto("/shopping");
+    await expect(page.getByText("하나만 사서 새로 만들 수 있는 요리가 없어요")).toBeVisible();
+  });
+});

@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ItemPatch, NewItemInput, Preferences } from "@/lib/domain/fridge";
+import {
+  dedupeShopping,
+  type ItemPatch,
+  type NewItemInput,
+  type NewShoppingInput,
+  type Preferences,
+} from "@/lib/domain/fridge";
 import { recentPurchases } from "@/lib/domain/recent";
 import {
   CompartmentMap,
@@ -158,6 +164,53 @@ export class SupabaseRepository implements FridgeRepository {
       (data ?? []).map((r) => itemFromRow(r, this.compartments)),
       limit,
     );
+  }
+
+  async addShopping(inputs: NewShoppingInput[]) {
+    const fridgeId = await this.ensureFridge();
+    const { data: existing, error: readErr } = await this.supabase
+      .from("shopping_items")
+      .select("ingredient_id, name, checked")
+      .eq("fridge_id", fridgeId)
+      .eq("checked", false)
+      .returns<Pick<ShoppingItemRow, "ingredient_id" | "name" | "checked">[]>();
+    if (readErr) fail("장보기 목록 불러오기", readErr);
+    const fresh = dedupeShopping(
+      (existing ?? []).map((r) => ({
+        ingredientId: r.ingredient_id,
+        name: r.name,
+        checked: r.checked,
+      })),
+      inputs,
+    );
+    if (fresh.length === 0) return [];
+    const { data, error } = await this.supabase
+      .from("shopping_items")
+      .insert(
+        fresh.map((i) => ({
+          fridge_id: fridgeId,
+          ingredient_id: i.ingredientId,
+          name: i.name.trim(),
+          quantity: i.quantity ?? null,
+          unit: i.unit ?? null,
+          from_recipe_id: i.fromRecipeId ?? null,
+        })),
+      )
+      .select("*")
+      .returns<ShoppingItemRow[]>();
+    if (error) fail("장보기 목록에 담기", error);
+    return (data ?? []).map(shoppingFromRow);
+  }
+
+  async setShoppingChecked(id: string, checked: boolean) {
+    const { error } = await this.supabase.from("shopping_items").update({ checked }).eq("id", id);
+    if (error) fail("장보기 체크", error);
+  }
+
+  async removeShopping(ids: string[]) {
+    if (ids.length === 0) return;
+    const { error } = await this.supabase.from("shopping_items").delete().in("id", ids);
+    if (error) fail("장보기 목록에서 빼기", error);
   }
 
   async cook(recipeId: string, usages: CookUsage[], servings = 1) {

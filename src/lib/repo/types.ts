@@ -2,6 +2,7 @@ import type {
   FridgeItem,
   ItemPatch,
   NewItemInput,
+  NewShoppingInput,
   Preferences,
   ShoppingItem,
 } from "@/lib/domain/fridge";
@@ -31,4 +32,8 @@ export interface FridgeRepository {
   cook(recipeId: string, usages: CookUsage[], servings?: number): Promise<void>;
   /** 최근 산 재료 (다 쓰거나 버린 것 포함, 중복 없이) */
   recentPurchases(limit?: number): Promise<RecentPurchase[]>;
+  /** 장보기 목록에 담는다. 아직 안 산 같은 재료는 건너뛴다. 담긴 항목을 돌려준다. */
+  addShopping(inputs: NewShoppingInput[]): Promise<ShoppingItem[]>;
+  setShoppingChecked(id: string, checked: boolean): Promise<void>;
+  removeShopping(ids: string[]): Promise<void>;
 }

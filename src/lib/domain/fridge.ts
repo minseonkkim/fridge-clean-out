@@ -99,6 +99,35 @@ export interface ShoppingItem {
   createdAt: string;
 }
 
+export interface NewShoppingInput {
+  ingredientId: string | null;
+  name: string;
+  quantity?: number | null;
+  unit?: Unit | null;
+  fromRecipeId?: string | null;
+}
+
+/**
+ * 이미 목록에 있는(아직 사지 않은) 같은 재료는 다시 담지 않는다.
+ * 사전 재료는 id로, 사전 외 재료는 이름으로 비교한다.
+ */
+export function dedupeShopping(
+  existing: Pick<ShoppingItem, "ingredientId" | "name" | "checked">[],
+  inputs: NewShoppingInput[],
+): NewShoppingInput[] {
+  const key = (x: { ingredientId: string | null; name: string }) =>
+    x.ingredientId ?? `name:${x.name.trim()}`;
+  const seen = new Set(existing.filter((s) => !s.checked).map(key));
+  const result: NewShoppingInput[] = [];
+  for (const input of inputs) {
+    const k = key(input);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    result.push(input);
+  }
+  return result;
+}
+
 export interface Preferences {
   householdSize: number;
   mealsPerDay: number;

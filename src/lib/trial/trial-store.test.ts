@@ -4,8 +4,11 @@ import {
   TRIAL_STORAGE_KEY,
   activeItems,
   addItems,
+  addShoppingItems,
   closeItem,
   cookRecipe,
+  removeShoppingItems,
+  setShoppingChecked,
   emptyTrial,
   hasTrialData,
   loadTrial,
@@ -136,6 +139,29 @@ describe("체험 데이터 저장소", () => {
       ),
     ).toThrow(/없는 재료/);
     expect(data.items[0].quantity).toBe(3);
+  });
+
+  it("장보기 목록에 담고, 체크하고, 지운다. 아직 안 산 같은 재료는 다시 담지 않는다", () => {
+    const clock = fakeClock();
+    let data = addShoppingItems(
+      emptyTrial(),
+      [
+        { ingredientId: "pork", name: "돼지고기", fromRecipeId: "kimchi_stew" },
+        { ingredientId: null, name: "고수 한 줌" },
+      ],
+      clock,
+    );
+    data = addShoppingItems(data, [{ ingredientId: "pork", name: "돼지고기" }], clock);
+    expect(data.shopping.map((s) => s.name)).toEqual(["돼지고기", "고수 한 줌"]);
+
+    data = setShoppingChecked(data, data.shopping[0].id, true);
+    expect(data.shopping[0].checked).toBe(true);
+    // 산(체크한) 재료는 다시 담을 수 있다
+    data = addShoppingItems(data, [{ ingredientId: "pork", name: "돼지고기" }], clock);
+    expect(data.shopping).toHaveLength(3);
+
+    data = removeShoppingItems(data, [data.shopping[1].id]);
+    expect(data.shopping.map((s) => s.name)).toEqual(["돼지고기", "돼지고기"]);
   });
 
   it("저장하고 다시 불러오면 같은 데이터다", () => {

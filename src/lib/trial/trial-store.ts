@@ -1,5 +1,7 @@
 import {
   DEFAULT_PREFERENCES,
+  dedupeShopping,
+  type NewShoppingInput,
   type FridgeItem,
   type ItemEvent,
   type ItemEventType,
@@ -240,6 +242,41 @@ export function cookRecipe(
     items: data.items.map((i) => items.get(i.id) ?? i),
     events: [...data.events, ...newEvents],
   };
+}
+
+// ─────────────────────────────────────────────
+// 장보기 목록
+// ─────────────────────────────────────────────
+
+export function addShoppingItems(
+  data: TrialData,
+  inputs: NewShoppingInput[],
+  clock = systemClock,
+): TrialData {
+  const now = clock.now().toISOString();
+  const created: ShoppingItem[] = dedupeShopping(data.shopping, inputs).map((input) => ({
+    id: clock.id(),
+    ingredientId: input.ingredientId,
+    name: input.name.trim(),
+    quantity: input.quantity ?? null,
+    unit: input.unit ?? null,
+    checked: false,
+    fromRecipeId: input.fromRecipeId ?? null,
+    createdAt: now,
+  }));
+  return { ...data, shopping: [...data.shopping, ...created] };
+}
+
+export function setShoppingChecked(data: TrialData, id: string, checked: boolean): TrialData {
+  return {
+    ...data,
+    shopping: data.shopping.map((s) => (s.id === id ? { ...s, checked } : s)),
+  };
+}
+
+export function removeShoppingItems(data: TrialData, ids: string[]): TrialData {
+  const remove = new Set(ids);
+  return { ...data, shopping: data.shopping.filter((s) => !remove.has(s.id)) };
 }
 
 export function updatePreferences(data: TrialData, patch: Partial<Preferences>): TrialData {

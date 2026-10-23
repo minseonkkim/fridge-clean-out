@@ -1,8 +1,11 @@
-import type { ItemPatch, NewItemInput, Preferences } from "@/lib/domain/fridge";
+import type { ItemPatch, NewItemInput, NewShoppingInput, Preferences } from "@/lib/domain/fridge";
 import { recentPurchases } from "@/lib/domain/recent";
 import {
   activeItems,
   addItems,
+  addShoppingItems,
+  removeShoppingItems,
+  setShoppingChecked,
   closeItem,
   cookRecipe,
   loadTrial,
@@ -69,5 +72,19 @@ export class TrialRepository implements FridgeRepository {
 
   async recentPurchases(limit?: number) {
     return recentPurchases(this.data.items, limit);
+  }
+
+  async addShopping(inputs: NewShoppingInput[]) {
+    const before = new Set(this.data.shopping.map((s) => s.id));
+    this.commit(addShoppingItems(this.data, inputs));
+    return this.data.shopping.filter((s) => !before.has(s.id));
+  }
+
+  async setShoppingChecked(id: string, checked: boolean) {
+    this.commit(setShoppingChecked(this.data, id, checked));
+  }
+
+  async removeShopping(ids: string[]) {
+    this.commit(removeShoppingItems(this.data, ids));
   }
 }

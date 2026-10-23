@@ -9,7 +9,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { FridgeItem, ItemPatch, NewItemInput, Preferences } from "@/lib/domain/fridge";
+import type {
+  FridgeItem,
+  ItemPatch,
+  NewItemInput,
+  NewShoppingInput,
+  Preferences,
+} from "@/lib/domain/fridge";
 import type { RecentPurchase } from "@/lib/domain/recent";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -32,6 +38,10 @@ interface FridgeContextValue {
   savePreferences(patch: Partial<Preferences>): Promise<void>;
   cook(recipeId: string, usages: CookUsage[], servings?: number): Promise<void>;
   recentPurchases(limit?: number): Promise<RecentPurchase[]>;
+  /** 담긴 항목 수를 돌려준다 (이미 있는 재료는 건너뜀) */
+  addShopping(inputs: NewShoppingInput[]): Promise<number>;
+  setShoppingChecked(id: string, checked: boolean): Promise<void>;
+  removeShopping(ids: string[]): Promise<void>;
 }
 
 const FridgeContext = createContext<FridgeContextValue | null>(null);
@@ -143,6 +153,24 @@ export function FridgeProvider({ children }: { children: ReactNode }) {
       },
       recentPurchases(limit) {
         return need().recentPurchases(limit);
+      },
+      async addShopping(inputs) {
+        const created = await need().addShopping(inputs);
+        setSnapshot((s) => (s ? { ...s, shopping: [...s.shopping, ...created] } : s));
+        return created.length;
+      },
+      async setShoppingChecked(id, checked) {
+        await need().setShoppingChecked(id, checked);
+        setSnapshot((s) =>
+          s ? { ...s, shopping: s.shopping.map((x) => (x.id === id ? { ...x, checked } : x)) } : s,
+        );
+      },
+      async removeShopping(ids) {
+        await need().removeShopping(ids);
+        const remove = new Set(ids);
+        setSnapshot((s) =>
+          s ? { ...s, shopping: s.shopping.filter((x) => !remove.has(x.id)) } : s,
+        );
       },
     };
   }, [repo, snapshot, status, error, reload]);

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { TrialUploader } from "@/components/trial-uploader";
 import "./globals.css";
 import { THEME_COLOR } from "./manifest";
+import { splashStartupImages } from "./splash-screens";
 
 export const metadata: Metadata = {
   title: "냉털 레시피",
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     capable: true,
     title: "냉털",
     statusBarStyle: "default",
+    startupImage: splashStartupImages(),
   },
   formatDetection: { telephone: false },
 };

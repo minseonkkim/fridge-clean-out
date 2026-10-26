@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { StepTimer } from "@/components/step-timer";
+import { AddMissingButton } from "./add-missing-button";
 import { CookButton } from "./cook-button";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { RECIPE_BY_ID } from "@/data/recipes";
@@ -112,6 +113,12 @@ function IngredientList({
           ? "지금 냉장고 재료로 만들 수 있어요"
           : `필수 재료 ${availability.missingRequired}가지가 없어요`}
       </p>
+      {!availability.canCook && (
+        <AddMissingButton
+          recipeId={recipe.id}
+          missing={required.filter((g) => g.status === "missing").map((g) => g.options[0])}
+        />
+      )}
       <CookButton
         recipe={recipe}
         items={items}

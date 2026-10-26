@@ -12,6 +12,19 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // 서비스 워커는 브라우저가 늘 최신 파일을 확인하게 한다.
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

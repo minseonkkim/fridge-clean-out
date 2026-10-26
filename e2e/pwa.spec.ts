@@ -41,6 +41,38 @@ test.describe("PWA", () => {
     }
   });
 
+  test("서비스 워커가 등록되면 오프라인에서 새로 고침해도 화면이 뜬다", async ({
+    page,
+    context,
+  }) => {
+    await page.goto("/fridge");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    // 서비스 워커가 이 페이지를 제어하도록 한 번 더 연다.
+    await page.reload();
+    await expect
+      .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
+      .toBe(true);
+
+    // 체험 데이터를 넣어 두고 오프라인으로 바꾼다.
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+    await sheet.getByRole("combobox", { name: "이름" }).fill("양파");
+    await sheet.getByRole("button", { name: "냉장고에 넣기" }).click();
+    await sheet.getByRole("button", { name: "완료" }).click();
+
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "내 냉장고" })).toBeVisible();
+    await expect(page.getByText("재료 1개")).toBeVisible();
+
+    // 미리 캐시된 다른 탭도 열린다.
+    await page.goto("/plan");
+    await expect(page.getByRole("heading", { name: "식단 플랜" })).toBeVisible();
+    await context.setOffline(false);
+  });
+
   test("테마 색과 iOS 웹앱 메타 태그가 있다", async ({ page }) => {
     await page.goto("/fridge");
     await expect(page.locator('meta[name="theme-color"]').first()).toHaveAttribute(

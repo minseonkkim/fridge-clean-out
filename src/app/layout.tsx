@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ServiceWorkerRegister } from "@/components/service-worker";
 import { TrialUploader } from "@/components/trial-uploader";
 import "./globals.css";
 import { THEME_COLOR } from "./manifest";
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         {children}
         <TrialUploader />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

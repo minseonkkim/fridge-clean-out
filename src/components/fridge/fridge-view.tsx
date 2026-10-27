@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type CompartmentSlot, type FridgeItem } from "@/lib/domain/fridge";
@@ -69,6 +69,73 @@ function Compartment({
 }
 
 /**
+ * 냉동실 서랍 (기획서 3.1절): 닫혀 있으면 서랍 앞면(손잡이·재료 수)만 보이고,
+ * 누르면 당겨지며 위에서 내려다보는 시점으로 재료가 보인다.
+ * 움직임을 줄이는 설정이면 회전 없이 바로 나타난다.
+ */
+function FreezerDrawer({
+  slot,
+  items,
+  onSelect,
+}: {
+  slot: CompartmentSlot;
+  items: FridgeItem[];
+  onSelect?: (item: FridgeItem) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const id = `compartment-${slot}`;
+  const preview = items
+    .slice(0, 2)
+    .map((i) => itemDisplayName(i, lookup))
+    .join(", ");
+
+  return (
+    <section aria-labelledby={id} className="rounded-xl bg-white/70 dark:bg-neutral-800/60">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={`${id}-inside`}
+        onClick={() => setOpen((o) => !o)}
+        className="flex min-h-14 w-full items-center gap-3 px-3 text-left"
+      >
+        <span aria-hidden className="h-1.5 w-12 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+        <span className="flex-1">
+          <h3 id={id} className="text-[11px] font-semibold text-neutral-400">
+            {SLOT_LABEL[slot]}
+          </h3>
+          <span className="text-xs text-neutral-600 dark:text-neutral-300">
+            {items.length === 0
+              ? "비어 있어요"
+              : `${preview}${items.length > 2 ? ` 외 ${items.length - 2}개` : ""}`}
+          </span>
+        </span>
+        <span className="text-xs text-indigo-700 dark:text-indigo-300">
+          {open ? "서랍 닫기" : "서랍 열기"}
+        </span>
+      </button>
+      {open && (
+        <div className="[perspective:700px]">
+          <div
+            id={`${id}-inside`}
+            className="origin-top [transform:rotateX(18deg)] animate-[drawer-open_300ms_ease-out_both] rounded-b-xl bg-indigo-50 p-2 motion-reduce:[transform:none] motion-reduce:animate-none dark:bg-indigo-950/60"
+          >
+            {items.length === 0 ? (
+              <p className="py-2 text-center text-xs text-neutral-500">서랍이 비어 있어요</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-1.5">
+                {items.map((item) => (
+                  <ItemToken key={item.id} item={item} onSelect={onSelect} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/**
  * 냉장고 화면 (기획서 3.1절 구조)
  * - 위 냉장실: 선반 3단(위·가운데·아래), 채소칸 서랍, 문 선반
  * - 아래 냉동실: 서랍 2단
@@ -125,18 +192,8 @@ export function FridgeView({
           role="group"
           className="flex flex-col gap-1 bg-indigo-50/70 p-1 dark:bg-indigo-950/40"
         >
-          <Compartment
-            slot="freezer_upper"
-            items={at("freezer_upper")}
-            onSelect={onSelect}
-            className="rounded-xl bg-white/70 dark:bg-neutral-800/60"
-          />
-          <Compartment
-            slot="freezer_lower"
-            items={at("freezer_lower")}
-            onSelect={onSelect}
-            className="rounded-xl bg-white/70 dark:bg-neutral-800/60"
-          />
+          <FreezerDrawer slot="freezer_upper" items={at("freezer_upper")} onSelect={onSelect} />
+          <FreezerDrawer slot="freezer_lower" items={at("freezer_lower")} onSelect={onSelect} />
         </div>
       </div>
 

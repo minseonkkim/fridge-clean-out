@@ -53,7 +53,12 @@ test.describe("재료 목록 보기", () => {
     await expect(fridge.getByRole("region", { name: "위 선반" })).toContainText("우유");
     await expect(fridge.getByRole("region", { name: "문 선반" })).toContainText("계란");
     await expect(fridge.getByRole("region", { name: "채소칸" })).toContainText("숙주");
-    await expect(page.getByRole("group", { name: "냉동실" })).toContainText("만두");
+    // 냉동실 서랍은 닫혀 있으면 앞면에 재료 이름만 보이고, 당기면 재료가 나온다
+    const freezer = page.getByRole("group", { name: "냉동실" });
+    await expect(freezer).toContainText("만두");
+    await expect(freezer.getByRole("button", { name: /^만두/ })).toHaveCount(0);
+    await freezer.getByRole("button", { name: /냉동 아래 서랍.*서랍 열기/ }).click();
+    await expect(freezer.getByRole("button", { name: /^만두 300g/ })).toBeVisible();
     await expect(page.getByRole("group", { name: "팬트리" })).toContainText("양파");
 
     // 재료를 누르면 상세 시트가 열린다

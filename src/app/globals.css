@@ -20,6 +20,18 @@
   }
 }
 
+/* 냉동실 서랍이 앞으로 당겨지며 기울어지는 연출 */
+@keyframes drawer-open {
+  from {
+    opacity: 0;
+    transform: rotateX(70deg) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(18deg) translateY(0);
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

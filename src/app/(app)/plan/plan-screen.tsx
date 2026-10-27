@@ -48,7 +48,8 @@ export function PlanScreen() {
   );
 }
 
-function PlanBody({ items }: { items: FridgeItem[] }) {
+/** 식단 본문. 데스크톱 냉장고 홈의 오른쪽 칸에서도 쓴다. */
+export function PlanBody({ items }: { items: FridgeItem[] }) {
   const { snapshot } = useFridge();
   const [horizon, setHorizon] = useState<HorizonValue>("3");
   const [meals, setMeals] = useState<"1" | "2" | "3" | null>(null);

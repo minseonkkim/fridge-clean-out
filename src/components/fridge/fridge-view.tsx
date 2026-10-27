@@ -160,14 +160,33 @@ export function FridgeView({
       <div
         aria-label="냉장고"
         role="group"
-        className="flex flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
+        className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
       >
         {/* 냉장실 */}
-        <div aria-label="냉장실" role="group" className="flex bg-sky-50/70 dark:bg-sky-950/40">
+        <div
+          aria-label="냉장실"
+          role="group"
+          className="flex flex-1 bg-sky-50/70 dark:bg-sky-950/40"
+        >
           <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
-            <Compartment slot="fridge_top" items={at("fridge_top")} onSelect={onSelect} />
-            <Compartment slot="fridge_middle" items={at("fridge_middle")} onSelect={onSelect} />
-            <Compartment slot="fridge_bottom" items={at("fridge_bottom")} onSelect={onSelect} />
+            <Compartment
+              slot="fridge_top"
+              items={at("fridge_top")}
+              onSelect={onSelect}
+              className="flex-1"
+            />
+            <Compartment
+              slot="fridge_middle"
+              items={at("fridge_middle")}
+              onSelect={onSelect}
+              className="flex-1"
+            />
+            <Compartment
+              slot="fridge_bottom"
+              items={at("fridge_bottom")}
+              onSelect={onSelect}
+              className="flex-1"
+            />
             <Compartment
               slot="veg_drawer"
               items={at("veg_drawer")}

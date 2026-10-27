@@ -3,14 +3,40 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
+import { FridgeView } from "@/components/fridge/fridge-view";
+import { Segmented } from "@/components/segmented";
 import { ItemDetailSheet } from "@/components/item-detail-sheet";
 import { ItemList, UrgencyBadges } from "@/components/item-list";
 import { useToast } from "@/components/toast";
 import { useFridge } from "@/lib/repo/fridge-context";
 
+type View = "fridge" | "list";
+const VIEW_OPTIONS = [
+  { value: "fridge", label: "냉장고" },
+  { value: "list", label: "목록" },
+] as const;
+const VIEW_KEY = "naengteol:fridge-view";
+
+function loadView(): View {
+  try {
+    return typeof window !== "undefined" && window.localStorage.getItem(VIEW_KEY) === "list"
+      ? "list"
+      : "fridge";
+  } catch {
+    return "fridge";
+  }
+}
+
+function saveView(view: View) {
+  try {
+    window.localStorage.setItem(VIEW_KEY, view);
+  } catch {
+    // 저장하지 못해도 이번 방문 동안은 고른 보기를 쓴다.
+  }
+}
+
 /**
- * 냉장고 홈. 1단계에서는 목록 화면으로 먼저 완성하고,
- * 2단계에서 인터랙티브 냉장고를 얹는다 (로드맵 원칙).
+ * 냉장고 홈. 냉장고 보기와, 같은 정보를 담은 목록 보기를 오간다 (기획서 3.5절).
  */
 export function FridgeHome() {
   const { status, error, snapshot, mode } = useFridge();
@@ -18,6 +44,8 @@ export function FridgeHome() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = snapshot?.items.find((i) => i.id === selectedId) ?? null;
   const { show, toast } = useToast();
+  // 브라우저 저장소를 읽지만, 보기는 snapshot(브라우저에서만 채워짐)이 있을 때만 그리므로 수화 불일치가 없다.
+  const [view, setView] = useState<View>(loadView);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pt-6 pb-28">
@@ -59,7 +87,27 @@ export function FridgeHome() {
             <UrgencyBadges items={snapshot.items} />
             <p className="shrink-0 text-sm text-neutral-500">재료 {snapshot.items.length}개</p>
           </div>
-          <ItemList items={snapshot.items} onSelect={(item) => setSelectedId(item.id)} />
+          <Segmented
+            label="보기"
+            value={view}
+            options={VIEW_OPTIONS}
+            onChange={(v) => {
+              setView(v);
+              saveView(v);
+            }}
+          />
+          {view === "fridge" ? (
+            <>
+              {snapshot.items.length === 0 && (
+                <p className="text-center text-sm text-neutral-500">
+                  냉장고가 비어 있어요. 오른쪽 아래 + 버튼으로 재료를 넣어 보세요.
+                </p>
+              )}
+              <FridgeView items={snapshot.items} onSelect={(item) => setSelectedId(item.id)} />
+            </>
+          ) : (
+            <ItemList items={snapshot.items} onSelect={(item) => setSelectedId(item.id)} />
+          )}
         </>
       )}
 

@@ -141,6 +141,13 @@ function ItemToken({
       <span className="text-[10px] text-neutral-500">
         {qty} · {dDayLabel(left)}
       </span>
+      {item.storage === "freezer" && (
+        <span
+          aria-hidden
+          data-frost
+          className="pointer-events-none absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.9)_0_2px,transparent_3px),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.8)_0_1.5px,transparent_2.5px),radial-gradient(circle_at_60%_85%,rgba(255,255,255,0.85)_0_2px,transparent_3px),linear-gradient(160deg,rgba(224,242,254,0.55),rgba(255,255,255,0.15))] ring-1 ring-sky-200 ring-inset"
+        />
+      )}
       {level === "expired" && (
         <span
           aria-hidden

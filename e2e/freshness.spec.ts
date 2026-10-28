@@ -44,6 +44,24 @@ test.describe("신선도 표현", () => {
     await expect(token("상추").locator("[data-fly-icon]")).toBeAttached();
   });
 
+  test("냉동 재료에는 서리가 낀다", async ({ page }) => {
+    await page.goto("/fridge");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+    await sheet.getByRole("radio", { name: "한 번에 여러 개" }).click();
+    await sheet.getByRole("textbox").fill("만두 300g, 계란 10");
+    await sheet.getByRole("button", { name: "2개 냉장고에 넣기" }).click();
+
+    const freezer = page.getByRole("group", { name: "냉동실" });
+    await freezer.getByRole("button", { name: /냉동 아래 서랍.*서랍 열기/ }).click();
+    await expect(
+      freezer.getByRole("button", { name: /^만두/ }).locator("[data-frost]"),
+    ).toBeAttached();
+    await expect(page.getByRole("button", { name: /^계란/ }).locator("[data-frost]")).toHaveCount(
+      0,
+    );
+  });
+
   test("움직임 줄이기 설정이면 흔들리지 않는다", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/fridge");

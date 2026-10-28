@@ -24,6 +24,14 @@ describe("여러 재료 한 번에 등록", () => {
     ]);
   });
 
+  it("병은 개수로 받고, 모르는 단위를 1ml·1g으로 바꾸지 않는다", () => {
+    const soy = parse("간장 1병, 참기름 2줄");
+    expect(soy).toEqual([
+      ["soy_sauce", 1, "ea"],
+      ["sesame_oil", 2, "ea"],
+    ]);
+  });
+
   it("kg은 g으로, 소수도 받는다", () => {
     expect(parse("소고기 1.5kg")).toEqual([["beef", 1500, "g"]]);
   });

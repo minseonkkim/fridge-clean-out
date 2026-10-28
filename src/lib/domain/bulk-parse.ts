@@ -7,7 +7,8 @@ import type { Ingredient, Unit } from "./types";
 /**
  * 여러 재료 한 번에 등록 (기획서 F1-2): "양파 3, 두부 1, 계란 10"
  * - 쉼표·줄바꿈·가운뎃점으로 나눈다.
- * - 수량 뒤 단위(g, kg, ml, L, 개, 팩, 단, 모, 봉)를 알아듣고 재료 기본 단위로 바꾼다.
+ * - 수량 뒤 단위(g, kg, ml, L, 개, 팩, 단, 모, 봉, 병)를 알아듣고 재료 기본 단위로 바꾼다.
+ * - 모르는 단위가 붙은 g·ml 재료는 개수로 받는다 ("간장 1병"이 1ml가 되지 않게).
  * - 수량이 없으면 1, 사전에 없는 이름은 사전 외 재료로 둔다.
  */
 
@@ -36,6 +37,7 @@ const UNIT_WORDS: Record<string, { unit: Unit; factor: number }> = {
   봉지: { unit: "pack", factor: 1 },
   모: { unit: "pack", factor: 1 },
   캔: { unit: "ea", factor: 1 },
+  병: { unit: "ea", factor: 1 },
   단: { unit: "bunch", factor: 1 },
 };
 
@@ -73,6 +75,12 @@ function parseOne(raw: string, index: IngredientIndex): BulkEntry {
       ? ingredient.usePerRecipe
       : amount;
   let unit: Unit = base;
+  // 모르는 단위(예: 참기름 2줄)를 g·ml 재료에 붙였으면 1ml·1g이 아니라 그 묶음 개수로 본다.
+  const unknownWord = amountGiven && unitWord !== "" && !said;
+  if (unknownWord && ingredient && (base === "g" || base === "ml")) {
+    quantity = amount;
+    unit = "ea";
+  }
   if (said) {
     if (said.unit === base) {
       quantity = amount * said.factor;

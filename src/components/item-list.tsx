@@ -72,14 +72,16 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
         </span>
         <span className="flex-1">
           <span
-            className={`font-medium ${level === "expired" ? "text-neutral-500" : ""} dark:text-neutral-400`}
+            className={`font-medium ${level === "expired" ? "text-neutral-500 dark:text-neutral-400" : ""}`}
           >
             {name}
           </span>
           <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400">
             {formatQuantity(item)}
           </span>
-          {item.storage === "freezer" && <span className="ml-1 text-xs text-sky-600">❄ 냉동</span>}
+          {item.storage === "freezer" && (
+            <span className="ml-1 text-xs text-sky-700 dark:text-sky-400">❄ 냉동</span>
+          )}
         </span>
         <span
           className={`min-w-14 rounded-full px-2 py-0.5 text-center text-sm font-semibold ${BADGE_STYLE[level]}`}

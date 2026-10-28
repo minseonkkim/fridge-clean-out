@@ -106,6 +106,11 @@ for (const scheme of ["light", "dark"] as const) {
       const bad = await lowContrast(page);
       if (bad.length) found[route] = bad;
     }
+    // 냉장고 홈의 목록 보기
+    await page.goto("/fridge");
+    await page.getByRole("radio", { name: "목록" }).click();
+    const list = await lowContrast(page);
+    if (list.length) found["/fridge (목록)"] = list;
     expect(found).toEqual({});
   });
 }

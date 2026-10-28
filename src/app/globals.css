@@ -32,6 +32,16 @@
   }
 }
 
+/* 움직임 줄이기 설정에서 회전·줌 대신 쓰는 페이드 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* 냉장고 안 재료를 누르면 살짝 튀어 오른다 */
 @keyframes item-pop {
   0% {

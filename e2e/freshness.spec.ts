@@ -71,4 +71,17 @@ test.describe("신선도 표현", () => {
       .evaluate((el) => getComputedStyle(el).animationName);
     expect(anim).toBe("none");
   });
+
+  test("움직임 줄이기 설정이면 냉동 서랍이 기울지 않고 페이드로 열린다", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/fridge");
+    const freezer = page.getByRole("group", { name: "냉동실" });
+    await freezer.getByRole("button", { name: /냉동 아래 서랍.*서랍 열기/ }).click();
+    const inside = page.locator("#compartment-freezer_lower-inside");
+    const style = await inside.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { name: s.animationName, transform: s.transform };
+    });
+    expect(style).toEqual({ name: "fade-in", transform: "none" });
+  });
 });

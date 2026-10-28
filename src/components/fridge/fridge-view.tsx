@@ -284,7 +284,7 @@ function FreezerDrawer({
         <div className="[perspective:700px]">
           <div
             id={`${id}-inside`}
-            className="origin-top [transform:rotateX(18deg)] animate-[drawer-open_300ms_ease-out_both] rounded-b-xl bg-indigo-50 p-2 motion-reduce:[transform:none] motion-reduce:animate-none dark:bg-indigo-950/60"
+            className="origin-top [transform:rotateX(18deg)] animate-[drawer-open_300ms_ease-out_both] rounded-b-xl bg-indigo-50 p-2 motion-reduce:[transform:none] motion-reduce:animate-[fade-in_200ms_ease-out_both] dark:bg-indigo-950/60"
           >
             {items.length === 0 ? (
               <p className="py-2 text-center text-xs text-neutral-500">서랍이 비어 있어요</p>

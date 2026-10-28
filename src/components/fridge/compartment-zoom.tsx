@@ -46,7 +46,12 @@ export function CompartmentZoom({
     const panel = panelRef.current;
     if (!panel) return;
     closeRef.current?.focus({ preventScroll: true });
-    if (prefersReducedMotion() || typeof panel.animate !== "function") return;
+    if (typeof panel.animate !== "function") return;
+    // 움직임 줄이기: 커지는 대신 제자리에서 페이드
+    if (prefersReducedMotion()) {
+      panel.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+      return;
+    }
     const to = panel.getBoundingClientRect();
     const from = request.from;
     const dx = from.left - to.left;

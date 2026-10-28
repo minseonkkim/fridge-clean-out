@@ -46,4 +46,26 @@ test.describe("칸 확대", () => {
       .click();
     await expect(page.getByRole("dialog", { name: "우유" })).toBeVisible();
   });
+
+  test("움직임 줄이기 설정이면 커지는 대신 페이드로 나타난다", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    // Element.animate 호출을 기록해 어떤 연출을 썼는지 본다
+    await page.evaluate(() => {
+      const w = window as unknown as { __frames: string[] };
+      w.__frames = [];
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (frames, options) {
+        w.__frames.push(JSON.stringify(frames));
+        return original.call(this, frames, options);
+      };
+    });
+    await page.getByRole("button", { name: "위 선반" }).click();
+    await expect(page.getByRole("dialog", { name: "위 선반 크게 보기" })).toBeVisible();
+    const frames = await page.evaluate(
+      () => (window as unknown as { __frames: string[] }).__frames,
+    );
+    expect(frames).toHaveLength(1);
+    expect(frames[0]).toContain("opacity");
+    expect(frames[0]).not.toContain("transform");
+  });
 });

@@ -27,6 +27,7 @@ import { SLOT_LABEL } from "@/lib/domain/fridge-view";
 import { storageChangePatch } from "@/lib/domain/item-edit";
 import { josa } from "@/lib/korean";
 import { PlanBody } from "../plan/plan-screen";
+import { TodayMeal } from "./today-meal";
 
 /** 주소의 #cook=<레시피 id> (식단에서 넘어올 때) */
 function readCookHash(): string | null {
@@ -51,6 +52,12 @@ function useCookHash(): string | null {
 }
 
 const COOK_HASH_EVENT = "naengteol:cook-hash";
+
+/** 같은 화면에서 요리 재료 강조를 켠다 (오늘의 한 끼 카드) */
+function showCookHash(recipeId: string) {
+  window.history.replaceState(null, "", `${window.location.pathname}#cook=${recipeId}`);
+  window.dispatchEvent(new Event(COOK_HASH_EVENT));
+}
 
 function clearCookHash() {
   window.history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -173,6 +180,11 @@ export function FridgeHome() {
                 </span>
               </Link>
             )}
+            <TodayMeal
+              items={snapshot.items}
+              preferences={snapshot.preferences}
+              onShowIngredients={showCookHash}
+            />
             <div className="flex items-center justify-between gap-2">
               <UrgencyBadges items={snapshot.items} />
               <p className="shrink-0 text-sm text-neutral-500">재료 {snapshot.items.length}개</p>

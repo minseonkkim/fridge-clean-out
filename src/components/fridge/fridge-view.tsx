@@ -22,6 +22,11 @@ import { UNIT_LABEL } from "@/lib/domain/types";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
+/** 드래그 중 자동 스크롤: 위 끝 영역, 아래 끝 영역(탭 바 포함), 한 프레임 최대 이동 px */
+const AUTOSCROLL_TOP_PX = 80;
+const AUTOSCROLL_BOTTOM_PX = 150;
+const AUTOSCROLL_MAX = 14;
+
 /** 밝게 보여 줄 재료 id. null이면 모두 평소대로. */
 const HighlightContext = createContext<ReadonlySet<string> | null>(null);
 
@@ -365,6 +370,35 @@ export function FridgeView({
     }),
     [drag, onMove],
   );
+
+  // 손가락이 화면 위·아래 끝에 가까우면 저절로 스크롤해 멀리 있는 칸(냉동실 등)에도 놓을 수 있게 한다.
+  const dragging = drag !== null;
+  useEffect(() => {
+    if (!dragging) return;
+    let frame = requestAnimationFrame(function step() {
+      const d = dragRef.current;
+      if (d) {
+        const bottomZone = window.innerHeight - AUTOSCROLL_BOTTOM_PX;
+        const speed =
+          d.y < AUTOSCROLL_TOP_PX
+            ? -Math.ceil(((AUTOSCROLL_TOP_PX - d.y) / AUTOSCROLL_TOP_PX) * AUTOSCROLL_MAX)
+            : d.y > bottomZone
+              ? Math.ceil(((d.y - bottomZone) / AUTOSCROLL_BOTTOM_PX) * AUTOSCROLL_MAX)
+              : 0;
+        if (speed !== 0) {
+          const before = window.scrollY;
+          window.scrollBy(0, speed);
+          if (window.scrollY !== before) {
+            const next = { ...d, over: slotAt(d.x, d.y) };
+            dragRef.current = next;
+            setDrag(next);
+          }
+        }
+      }
+      frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [dragging]);
 
   // 드래그하는 동안에는 화면이 스크롤되지 않게 막는다.
   useEffect(() => {

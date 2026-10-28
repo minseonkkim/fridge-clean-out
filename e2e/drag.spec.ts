@@ -9,18 +9,35 @@ async function addBulk(page: Page, text: string, count: number) {
   await expect(sheet).toBeHidden();
 }
 
-/** 길게 누른 뒤 목표 칸으로 끌어다 놓는다 */
+/**
+ * 길게 누른 뒤 목표 칸으로 끌어다 놓는다.
+ * 목표 칸이 화면 밖이면 손가락을 화면 끝에 대고 자동 스크롤로 칸이 보일 때까지 기다린다.
+ */
 async function longPressDrag(page: Page, from: string, toSlot: string) {
   const token = page.getByRole("button", { name: new RegExp(`^${from}`) });
+  await token.scrollIntoViewIfNeeded();
   const a = (await token.boundingBox())!;
   const target = page.locator(`[data-slot="${toSlot}"]`);
-  await target.scrollIntoViewIfNeeded();
-  const b = (await target.boundingBox())!;
-  const a2 = (await token.boundingBox())!;
-  await page.mouse.move(a2.x + a2.width / 2, a2.y + a2.height / 2);
+  const { height } = page.viewportSize()!;
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
   await page.mouse.down();
   await page.waitForTimeout(550);
-  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 });
+  // 탭 바·자동 스크롤 영역을 피한 화면 안쪽
+  const safeTop = 100;
+  const safeBottom = height - 170;
+  for (let i = 0; i < 60; i++) {
+    const b = (await target.boundingBox())!;
+    const y = Math.min(Math.max(b.y + b.height / 2, safeTop), safeBottom);
+    const inside = b.y + 10 < safeBottom && b.y + b.height - 10 > safeTop;
+    if (inside) {
+      const top = Math.max(b.y + 10, safeTop);
+      const bottom = Math.min(b.y + b.height - 10, safeBottom);
+      await page.mouse.move(b.x + b.width / 2, (top + bottom) / 2, { steps: 12 });
+      break;
+    }
+    await page.mouse.move(a.x + a.width / 2, y < safeTop + 1 ? 20 : height - 30, { steps: 4 });
+    await page.waitForTimeout(100);
+  }
   return {
     drop: async () => page.mouse.up(),
     a,

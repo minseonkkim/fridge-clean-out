@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("랜딩", () => {
   test("처음 오면 냉장고 데모와 시작 버튼을 보여 준다", async ({ page }) => {

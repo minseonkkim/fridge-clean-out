@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type CompartmentSlot, type FridgeItem } from "@/lib/domain/fridge";
-import { SLOT_LABEL, groupBySlot } from "@/lib/domain/fridge-view";
+import { SLOT_LABEL, groupBySlot, urgencySummary } from "@/lib/domain/fridge-view";
 import { UNIT_LABEL } from "@/lib/domain/types";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
@@ -155,51 +155,112 @@ export function FridgeView({
   }, [items]);
   const at = (slot: CompartmentSlot) => bySlot.get(slot) ?? [];
 
+  const [open, setOpen] = useState(loadDoor);
+  const summary = urgencySummary(items, todayIso());
+  const freezerCount = at("freezer_upper").length + at("freezer_lower").length;
+
+  function openDoor() {
+    setOpen(true);
+    saveDoor(true);
+  }
+
+  // 열린 문은 냉장고 바깥의 빈 곳을 누르면 닫힌다 (기획서 3.2절).
+  // 버튼·링크·입력, 시트(dialog), 탭바를 누를 때는 닫지 않는다.
+  const cabinetRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(e: PointerEvent) {
+      const target = e.target as HTMLElement | null;
+      if (!target || cabinetRef.current?.contains(target)) return;
+      if (
+        target.closest("button, a, input, select, textarea, label, dialog, nav, [role=radiogroup]")
+      ) {
+        return;
+      }
+      setOpen(false);
+      saveDoor(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  const interior = `transition-[filter] duration-500 motion-reduce:transition-none ${
+    open ? "brightness-100" : "brightness-75"
+  }`;
+
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
+    // isolate: 3D 원근 효과가 고정된 탭바·버튼 위로 올라오지 않도록 냉장고를 자체 쌓임 맥락에 가둔다.
+    <div className="relative isolate z-0 flex flex-col gap-3 sm:flex-row">
       <div
+        ref={cabinetRef}
         aria-label="냉장고"
         role="group"
-        className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900"
+        className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 [perspective:1400px] dark:border-neutral-700 dark:bg-neutral-900"
       >
         {/* 냉장실 */}
         <div
           aria-label="냉장실"
           role="group"
-          className="flex flex-1 bg-sky-50/70 dark:bg-sky-950/40"
+          className="relative flex flex-1 rounded-t-[1.25rem] bg-sky-50/70 dark:bg-sky-950/40"
         >
-          <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
+          <div inert={!open} aria-hidden={!open} className={`flex flex-1 ${interior}`}>
+            <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
+              <Compartment
+                slot="fridge_top"
+                items={at("fridge_top")}
+                onSelect={onSelect}
+                className="flex-1"
+              />
+              <Compartment
+                slot="fridge_middle"
+                items={at("fridge_middle")}
+                onSelect={onSelect}
+                className="flex-1"
+              />
+              <Compartment
+                slot="fridge_bottom"
+                items={at("fridge_bottom")}
+                onSelect={onSelect}
+                className="flex-1"
+              />
+              <Compartment
+                slot="veg_drawer"
+                items={at("veg_drawer")}
+                onSelect={onSelect}
+                className="m-1 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40"
+              />
+            </div>
             <Compartment
-              slot="fridge_top"
-              items={at("fridge_top")}
+              slot="fridge_door"
+              items={at("fridge_door")}
               onSelect={onSelect}
-              className="flex-1"
-            />
-            <Compartment
-              slot="fridge_middle"
-              items={at("fridge_middle")}
-              onSelect={onSelect}
-              className="flex-1"
-            />
-            <Compartment
-              slot="fridge_bottom"
-              items={at("fridge_bottom")}
-              onSelect={onSelect}
-              className="flex-1"
-            />
-            <Compartment
-              slot="veg_drawer"
-              items={at("veg_drawer")}
-              onSelect={onSelect}
-              className="m-1 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40"
+              className="w-24 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
             />
           </div>
-          <Compartment
-            slot="fridge_door"
-            items={at("fridge_door")}
-            onSelect={onSelect}
-            className="w-24 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
-          />
+          <Door
+            open={open}
+            onOpen={openDoor}
+            label="냉장실 문 열기"
+            className="rounded-t-[1.25rem]"
+          >
+            <span className="flex flex-col items-start gap-2">
+              {summary.today > 0 && (
+                <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white shadow">
+                  오늘까지 {summary.today}
+                </span>
+              )}
+              {summary.soon > 0 && (
+                <span className="rounded-full bg-amber-400 px-3 py-1 text-sm font-bold text-amber-950 shadow">
+                  3일 안에 {summary.soon}
+                </span>
+              )}
+              {summary.expired > 0 && (
+                <span className="rounded-full bg-neutral-500 px-3 py-1 text-sm font-bold text-white shadow">
+                  기한 지남 {summary.expired}
+                </span>
+              )}
+            </span>
+          </Door>
         </div>
 
         {/* 냉장실·냉동실 경계 */}
@@ -209,14 +270,28 @@ export function FridgeView({
         <div
           aria-label="냉동실"
           role="group"
-          className="flex flex-col gap-1 bg-indigo-50/70 p-1 dark:bg-indigo-950/40"
+          className="relative rounded-b-[1.25rem] bg-indigo-50/70 dark:bg-indigo-950/40"
         >
-          <FreezerDrawer slot="freezer_upper" items={at("freezer_upper")} onSelect={onSelect} />
-          <FreezerDrawer slot="freezer_lower" items={at("freezer_lower")} onSelect={onSelect} />
+          <div inert={!open} aria-hidden={!open} className={`flex flex-col gap-1 p-1 ${interior}`}>
+            <FreezerDrawer slot="freezer_upper" items={at("freezer_upper")} onSelect={onSelect} />
+            <FreezerDrawer slot="freezer_lower" items={at("freezer_lower")} onSelect={onSelect} />
+          </div>
+          <Door
+            open={open}
+            onOpen={openDoor}
+            label="냉동실 문 열기"
+            className="rounded-b-[1.25rem]"
+          >
+            {freezerCount > 0 && (
+              <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-sky-800 shadow">
+                ❄ 냉동 {freezerCount}개
+              </span>
+            )}
+          </Door>
         </div>
       </div>
 
-      {/* 팬트리 */}
+      {/* 팬트리: 문이 없는 선반 */}
       <div
         aria-label="팬트리"
         role="group"
@@ -225,5 +300,61 @@ export function FridgeView({
         <Compartment slot="pantry" items={at("pantry")} onSelect={onSelect} />
       </div>
     </div>
+  );
+}
+
+const DOOR_KEY = "naengteol:door";
+
+/** 한 번 연 문은 이번 방문(탭) 동안 열어 둔다. */
+function loadDoor(): boolean {
+  try {
+    return typeof window !== "undefined" && window.sessionStorage.getItem(DOOR_KEY) === "open";
+  } catch {
+    return false;
+  }
+}
+
+function saveDoor(open: boolean) {
+  try {
+    window.sessionStorage.setItem(DOOR_KEY, open ? "open" : "closed");
+  } catch {
+    // 저장하지 못하면 다음 방문 때 다시 닫힌 문으로 시작한다.
+  }
+}
+
+/**
+ * 냉장고 문 (기획서 3.2절). 누르면 경첩(오른쪽)을 축으로 약 110° 돌며 0.5초 동안 열린다.
+ * 움직임 줄이기 설정이면 회전 대신 페이드.
+ */
+function Door({
+  open,
+  onOpen,
+  label,
+  className = "",
+  children,
+}: {
+  open: boolean;
+  onOpen: () => void;
+  label: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={label}
+      aria-hidden={open}
+      tabIndex={open ? -1 : 0}
+      className={`absolute inset-0 z-10 flex origin-right flex-col items-start justify-between bg-gradient-to-br from-neutral-50 to-neutral-200 p-4 shadow-xl transition-[transform,opacity] duration-500 ease-out [backface-visibility:hidden] motion-reduce:[transform:none] motion-reduce:transition-opacity dark:from-neutral-700 dark:to-neutral-800 ${
+        open ? "pointer-events-none [transform:rotateY(110deg)] motion-reduce:opacity-0" : ""
+      } ${className}`}
+    >
+      {children}
+      <span
+        aria-hidden
+        className="absolute top-1/2 right-4 h-20 w-2 -translate-y-1/2 rounded-full bg-neutral-400 dark:bg-neutral-500"
+      />
+    </button>
   );
 }

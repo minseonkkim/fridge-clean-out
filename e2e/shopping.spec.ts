@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 async function addBulk(page: Page, text: string, count: number) {
   await page.goto("/fridge");

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("화면 크기 대응", () => {
   test("1024px 이상에서는 냉장고 옆에 식단 플랜이 나란히 보인다", async ({ page }) => {

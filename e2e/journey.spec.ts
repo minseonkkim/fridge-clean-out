@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 /**
  * 완료 기준 1: 재료 등록 → 플랜 확인 → 요리 완료 → 장보기까지 목록 화면만으로 끝까지 동작한다.

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("하단 탭바", () => {
   test("네 탭으로 이동하고 현재 탭을 표시한다", async ({ page }) => {

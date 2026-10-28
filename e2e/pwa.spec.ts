@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("PWA", () => {
   test("매니페스트가 기획서 설정대로 나온다", async ({ page, request }) => {

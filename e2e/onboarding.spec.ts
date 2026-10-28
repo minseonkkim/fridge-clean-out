@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("온보딩", () => {
   test("설정을 마치면 식단과 냉장고에 반영된다", async ({ page }) => {

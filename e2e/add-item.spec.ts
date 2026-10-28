@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("재료 추가 (체험 모드)", () => {
   test("별칭으로 찾아 넣으면 냉장고에 들어가고 새로고침해도 남는다", async ({ page }) => {

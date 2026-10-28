@@ -28,6 +28,7 @@ import { storageChangePatch } from "@/lib/domain/item-edit";
 import { josa } from "@/lib/korean";
 import { PlanBody } from "../plan/plan-screen";
 import { TodayMeal } from "./today-meal";
+import { UiArt } from "@/components/ui-art";
 
 /** 주소의 #cook=<레시피 id> (식단에서 넘어올 때) */
 function readCookHash(): string | null {
@@ -211,7 +212,8 @@ export function FridgeHome() {
                 className="flex items-center justify-between gap-2 rounded-2xl bg-emerald-50 p-3 text-sm dark:bg-emerald-950"
               >
                 <span>
-                  🍳 <b>{cookRecipe.name}</b>에 쓰는 재료 {highlight.size}개를 밝게 표시했어요
+                  <UiArt name="pan" className="mr-1 inline size-5 align-text-bottom" />
+                  <b>{cookRecipe.name}</b>에 쓰는 재료 {highlight.size}개를 밝게 표시했어요
                 </span>
                 <span className="flex shrink-0 gap-1">
                   <Link

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { UiArt } from "@/components/ui-art";
 
 export function formatSeconds(total: number): string {
   const m = Math.floor(total / 60);
@@ -58,7 +59,8 @@ export function StepTimer({ seconds }: { seconds: number }) {
               : "bg-neutral-100 dark:bg-neutral-800"
         }`}
       >
-        ⏱ {done ? "다 됐어요!" : formatSeconds(left)}
+        <UiArt name="timer" className="mr-1 size-5 align-[-4px]" />
+        {done ? "다 됐어요!" : formatSeconds(left)}
       </button>
       {!running && !done && left !== seconds && (
         <button

@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ingredientIcon } from "@/data/ingredient-icons";
+import { IngredientIcon } from "@/components/ingredient-icon";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type FridgeItem } from "@/lib/domain/fridge";
 import { byUrgency, groupBySlot, urgencySummary } from "@/lib/domain/fridge-view";
 import { STORAGE_LABEL, UNIT_LABEL } from "@/lib/domain/types";
 import { Segmented } from "./segmented";
+import { UiArt } from "@/components/ui-art";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
@@ -67,9 +68,11 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
         data-item-id={item.id}
         className="flex min-h-14 w-full items-center gap-3 px-1 text-left"
       >
-        <span aria-hidden className="text-xl">
-          {ingredientIcon(item.ingredientId, lookup(item.ingredientId ?? "")?.category)}
-        </span>
+        <IngredientIcon
+          ingredientId={item.ingredientId}
+          category={lookup(item.ingredientId ?? "")?.category}
+          className="size-9"
+        />
         <span className="flex-1">
           <span
             className={`font-medium ${level === "expired" ? "text-neutral-500 dark:text-neutral-400" : ""}`}
@@ -80,7 +83,10 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
             {formatQuantity(item)}
           </span>
           {item.storage === "freezer" && (
-            <span className="ml-1 text-xs text-sky-700 dark:text-sky-400">❄ 냉동</span>
+            <span data-storage-badge className="ml-1 text-xs text-sky-700 dark:text-sky-400">
+              <UiArt name="snowflake" className="mr-0.5 size-3 align-[-1px]" />
+              냉동
+            </span>
           )}
         </span>
         <span
@@ -143,7 +149,7 @@ export function ItemList({
         </ul>
       )}
       <p className="text-xs text-neutral-500 dark:text-neutral-400">
-        기한은 권장값이에요. {STORAGE_LABEL.freezer} 재료는 ❄로 표시해요.
+        기한은 권장값이에요. {STORAGE_LABEL.freezer} 재료에는 눈송이를 붙여요.
       </p>
     </div>
   );

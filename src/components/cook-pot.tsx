@@ -1,9 +1,11 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { UiArt } from "@/components/ui-art";
 
 export interface PotIngredient {
   key: string;
+  /** 재료 그림 주소 (ingredientArtUrl) */
   icon: string;
   /** 재료가 출발하는 화면 위치 */
   from: { x: number; y: number; width: number; height: number };
@@ -88,7 +90,7 @@ export function CookPot({
             else itemRefs.current.delete(ing.key);
           }}
           data-pot-ingredient
-          className="absolute flex items-center justify-center text-3xl"
+          className="absolute flex items-center justify-center"
           style={{
             left: ing.from.x,
             top: ing.from.y,
@@ -96,14 +98,15 @@ export function CookPot({
             height: ing.from.height,
           }}
         >
-          {ing.icon}
+          {/* eslint-disable-next-line @next/next/no-img-element -- 코드로 만든 SVG data URL */}
+          <img src={ing.icon} alt="" className="size-10" />
         </span>
       ))}
       <div
         ref={potRef}
-        className="absolute bottom-1/3 left-1/2 -ml-12 flex size-24 items-center justify-center text-7xl"
+        className="absolute bottom-1/3 left-1/2 -ml-14 flex size-28 items-center justify-center"
       >
-        🍲
+        <UiArt name="pot" className="size-28" />
       </div>
     </div>
   );

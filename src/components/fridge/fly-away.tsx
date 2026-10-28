@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { UiArt } from "@/components/ui-art";
 
 export interface FlyAwayRequest {
   id: number;
@@ -74,9 +75,9 @@ export function FlyAway({ request, onDone }: { request: FlyAwayRequest; onDone: 
       </div>
       <div
         ref={targetRef}
-        className={`absolute bottom-28 text-5xl ${request.kind === "plate" ? "left-8" : "right-8"}`}
+        className={`absolute bottom-28 ${request.kind === "plate" ? "left-8" : "right-8"}`}
       >
-        {request.kind === "plate" ? "🍽" : "🗑"}
+        <UiArt name={request.kind === "plate" ? "plate" : "trash"} className="size-16" />
       </div>
     </div>
   );

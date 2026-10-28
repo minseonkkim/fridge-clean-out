@@ -36,7 +36,7 @@ export function QuantityGlyph({
   unit: Unit;
   reference: number;
   category: IngredientCategory | null;
-  /** 재료 아이콘 (이모지). 셀 수 있는 재료는 이 아이콘을 개수만큼 쌓는다. */
+  /** 재료 그림 주소 (ingredientArtUrl). 셀 수 있는 재료는 이 그림을 개수만큼 겹쳐 쌓는다. */
   icon?: string;
   size?: "sm" | "lg";
 }) {
@@ -48,7 +48,10 @@ export function QuantityGlyph({
     const w = size === "lg" ? "w-10 h-14" : "w-4 h-5";
     return (
       <span aria-hidden className="inline-flex items-end gap-1">
-        {icon && <span className={size === "lg" ? "text-3xl" : "text-base"}>{icon}</span>}
+        {icon && (
+          // eslint-disable-next-line @next/next/no-img-element -- 코드로 만든 SVG data URL
+          <img src={icon} alt="" className={size === "lg" ? "size-12" : "size-6"} />
+        )}
         <span
           data-fill={v.ratio}
           className={`relative inline-block overflow-hidden rounded-md border-2 border-neutral-400 bg-white dark:border-neutral-500 dark:bg-neutral-900 ${w}`}
@@ -70,12 +73,13 @@ export function QuantityGlyph({
     >
       {Array.from({ length: v.shown }, (_, i) =>
         icon ? (
-          <span
+          // eslint-disable-next-line @next/next/no-img-element -- 코드로 만든 SVG data URL
+          <img
             key={i}
-            className={`${size === "lg" ? "text-3xl" : "text-xs"} leading-none ${i > 0 ? (size === "lg" ? "-ml-3" : "-ml-2") : ""}`}
-          >
-            {icon}
-          </span>
+            src={icon}
+            alt=""
+            className={`${size === "lg" ? "size-12" : "size-6"} ${i > 0 ? (size === "lg" ? "-ml-6" : "-ml-3.5") : ""}`}
+          />
         ) : (
           <span
             key={i}

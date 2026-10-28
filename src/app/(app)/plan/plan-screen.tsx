@@ -11,6 +11,7 @@ import { itemDisplayName, type FridgeItem } from "@/lib/domain/fridge";
 import type { Horizon, PlannedMeal } from "@/lib/planner/plan";
 import { usePlan } from "@/lib/planner/use-plan";
 import { useFridge } from "@/lib/repo/fridge-context";
+import { UiArt } from "@/components/ui-art";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
@@ -198,9 +199,10 @@ function MealRow({
       </Link>
       <Link
         href={`/fridge#cook=${recipe.id}`}
-        className="mt-1 inline-flex min-h-11 items-center px-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+        className="mt-1 inline-flex min-h-11 items-center gap-1 px-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
       >
-        🧊 냉장고에서 재료 보기
+        <UiArt name="fridge" className="size-5" />
+        냉장고에서 재료 보기
       </Link>
     </li>
   );

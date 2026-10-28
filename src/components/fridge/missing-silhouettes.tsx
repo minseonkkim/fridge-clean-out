@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ingredientIcon } from "@/data/ingredient-icons";
+import { IngredientIcon } from "@/components/ingredient-icon";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { type FridgeItem } from "@/lib/domain/fridge";
 import { recipeAvailability } from "@/lib/domain/recipe-view";
@@ -74,9 +74,11 @@ export function MissingSilhouettes({
                 data-silhouette
                 className="flex min-h-16 min-w-20 flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-400 px-2 py-1 text-xs text-neutral-500 disabled:border-emerald-500 disabled:text-emerald-700 dark:border-neutral-600 dark:text-neutral-400"
               >
-                <span aria-hidden className={`text-2xl ${done ? "" : "opacity-30 grayscale"}`}>
-                  {ingredientIcon(m.ingredientId, baseLookup(m.ingredientId)?.category)}
-                </span>
+                <IngredientIcon
+                  ingredientId={m.ingredientId}
+                  category={baseLookup(m.ingredientId)?.category}
+                  className={`size-8 ${done ? "" : "opacity-30 grayscale"}`}
+                />
                 <span className="font-semibold">{m.name}</span>
                 <span>{done ? "담았어요 ✓" : `${m.amount}${UNIT_LABEL[m.unit]}`}</span>
               </button>

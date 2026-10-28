@@ -8,10 +8,14 @@ async function collect(page: Page) {
       if (el.closest("[aria-hidden=true], [inert]")) continue;
       // 장식(aria-hidden)을 뺀 글자 = 화면 읽기 프로그램이 읽는 내용
       const visible = el.cloneNode(true) as HTMLElement;
-      visible.querySelectorAll("[aria-hidden=true]").forEach((h) => h.remove());
-      out[el.dataset.itemId!] = (el.getAttribute("aria-label") ?? visible.textContent ?? "")
-        .replace(/❄ 냉동/, "")
-        .replace(/\s+/g, "");
+      visible
+        .querySelectorAll("[aria-hidden=true], [data-storage-badge]")
+        .forEach((h) => h.remove());
+      out[el.dataset.itemId!] = (
+        el.getAttribute("aria-label") ??
+        visible.textContent ??
+        ""
+      ).replace(/\s+/g, "");
     }
     return out;
   });

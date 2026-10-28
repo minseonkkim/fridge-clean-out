@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { ingredientIcon } from "@/data/ingredient-icons";
+import { ingredientArtUrl } from "@/data/ingredient-art";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
 import { itemDisplayName, type FridgeItem, type ItemPatch } from "@/lib/domain/fridge";
@@ -15,6 +15,7 @@ import { BottomSheet } from "./bottom-sheet";
 import { Segmented } from "./segmented";
 import { QuantityGlyph } from "./fridge/quantity-glyph";
 import { Stepper } from "./stepper";
+import { UiArt } from "@/components/ui-art";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 const STORAGE_OPTIONS = STORAGES.map((s) => ({ value: s, label: STORAGE_LABEL[s] }));
@@ -122,7 +123,7 @@ export function ItemDetailSheet({
               unit={item.unit}
               reference={glyphReference}
               category={ingredient?.category ?? null}
-              icon={ingredientIcon(item.ingredientId, ingredient?.category)}
+              icon={ingredientArtUrl(item.ingredientId, ingredient?.category)}
               size="lg"
             />
           </span>
@@ -190,7 +191,7 @@ export function ItemDetailSheet({
             onClick={() => finish("used_up")}
             className="min-h-12 rounded-xl bg-emerald-50 font-semibold text-emerald-800 disabled:opacity-50 dark:bg-emerald-950 dark:text-emerald-200"
           >
-            🍽 다 씀
+            <UiArt name="plate" className="mr-1 size-6 align-middle" />다 씀
           </button>
           <button
             type="button"
@@ -198,7 +199,8 @@ export function ItemDetailSheet({
             onClick={() => finish("discarded")}
             className="min-h-12 rounded-xl bg-neutral-100 font-semibold text-neutral-700 disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-300"
           >
-            🗑 버림
+            <UiArt name="trash" className="mr-1 size-5 align-middle" />
+            버림
           </button>
         </div>
 

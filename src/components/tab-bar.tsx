@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UiArt } from "@/components/ui-art";
 
 const TABS = [
-  { href: "/fridge", label: "냉장고", icon: "🧊" },
-  { href: "/plan", label: "식단", icon: "🍱" },
-  { href: "/shopping", label: "장보기", icon: "🛒" },
-  { href: "/my", label: "마이", icon: "🙂" },
+  { href: "/fridge", label: "냉장고", icon: "fridge" },
+  { href: "/plan", label: "식단", icon: "plan" },
+  { href: "/shopping", label: "장보기", icon: "cart" },
+  { href: "/my", label: "마이", icon: "person" },
 ] as const;
 
 /** 레시피 상세는 식단에서 들어가므로 식단 탭으로 본다. */
@@ -40,9 +41,10 @@ export function TabBar() {
                     : "text-neutral-600 dark:text-neutral-400"
                 }`}
               >
-                <span aria-hidden className="text-xl">
-                  {tab.icon}
-                </span>
+                <UiArt
+                  name={tab.icon}
+                  className={`size-7 ${current ? "" : "opacity-70 grayscale-[40%]"}`}
+                />
                 {tab.label}
               </Link>
             </li>

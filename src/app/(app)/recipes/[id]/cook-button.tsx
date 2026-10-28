@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { CookPot, type PotIngredient } from "@/components/cook-pot";
-import { ingredientIcon } from "@/data/ingredient-icons";
+import { ingredientArtUrl } from "@/data/ingredient-art";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { planCookUsage, type CookPlan } from "@/lib/domain/cook";
 import { itemDisplayName, type FridgeItem } from "@/lib/domain/fridge";
 import { UNIT_LABEL, type Recipe } from "@/lib/domain/types";
 import { lookupWithPantry } from "@/lib/planner/preferences";
 import { useFridge } from "@/lib/repo/fridge-context";
+import { UiArt } from "@/components/ui-art";
 
 const baseLookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
@@ -68,7 +69,7 @@ export function CookButton({
       plan,
       lines: plan.usages.map((u) => ({
         itemId: u.itemId,
-        icon: ingredientIcon(
+        icon: ingredientArtUrl(
           byId.get(u.itemId)!.ingredientId,
           baseLookup(byId.get(u.itemId)!.ingredientId ?? "")?.category,
         ),
@@ -133,7 +134,10 @@ export function CookButton({
         aria-label="요리 완료 결과"
         className="flex flex-col gap-2 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100"
       >
-        <p className="text-base font-bold">🍳 {recipe.name} 완료!</p>
+        <p className="flex items-center gap-1 text-base font-bold">
+          <UiArt name="pan" className="size-7" />
+          {recipe.name} 완료!
+        </p>
         {done.used.length > 0 && <p>냉장고에서 뺐어요: {done.used.join(", ")}</p>}
         {done.mismatched.length > 0 && (
           <p className="rounded-lg bg-amber-100 p-2 text-amber-900 dark:bg-amber-900 dark:text-amber-100">
@@ -185,9 +189,8 @@ export function CookButton({
             {preview.lines.map((line) => (
               <li key={line.itemId} className="flex min-h-11 items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
-                  <span data-usage-icon aria-hidden className="text-2xl">
-                    {line.icon}
-                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- 코드로 만든 SVG data URL */}
+                  <img data-usage-icon src={line.icon} alt="" aria-hidden className="size-8" />
                   {line.text}
                 </span>
                 {line.mismatched && (

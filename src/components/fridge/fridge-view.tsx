@@ -13,12 +13,13 @@ import {
   type DragApi,
   type DragState,
 } from "./drag";
-import { ingredientIcon } from "@/data/ingredient-icons";
+import { ingredientArtUrl } from "@/data/ingredient-art";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type CompartmentSlot, type FridgeItem } from "@/lib/domain/fridge";
 import { SLOT_LABEL, groupBySlot, urgencySummary } from "@/lib/domain/fridge-view";
 import { UNIT_LABEL } from "@/lib/domain/types";
+import { UiArt } from "@/components/ui-art";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
@@ -149,7 +150,7 @@ function ItemToken({
         unit={item.unit}
         reference={fillReference(item.quantity, ingredient?.usePerRecipe)}
         category={ingredient?.category ?? null}
-        icon={ingredientIcon(item.ingredientId, ingredient?.category)}
+        icon={ingredientArtUrl(item.ingredientId, ingredient?.category)}
       />
       <span className="max-w-20 truncate font-semibold">{name}</span>
       <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
@@ -163,12 +164,8 @@ function ItemToken({
         />
       )}
       {level === "expired" && (
-        <span
-          aria-hidden
-          data-fly-icon
-          className="absolute top-0.5 right-0.5 text-[11px] grayscale-0"
-        >
-          🪰
+        <span aria-hidden data-fly-icon className="absolute top-0 right-0 grayscale-0">
+          <UiArt name="fly" className="size-4" />
         </span>
       )}
     </button>
@@ -203,8 +200,7 @@ function Compartment({
       ref={sectionRef}
       aria-labelledby={id}
       data-slot={slot}
-      // 화면 밖 칸은 브라우저가 그리기를 건너뛴다 (재료가 많을 때 스크롤·애니메이션 비용 절감)
-      className={`flex min-h-16 flex-col gap-1 p-2 transition-colors [contain-intrinsic-size:auto_4rem] [content-visibility:auto] ${className} ${dropClass(slot, drag)}`}
+      className={`flex flex-col gap-1 p-2 transition-colors ${className} ${dropClass(slot, drag)}`}
     >
       <h3 id={id} className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
         {zoom ? (
@@ -223,7 +219,8 @@ function Compartment({
           SLOT_LABEL[slot]
         )}
       </h3>
-      <div className="flex flex-wrap gap-1.5">
+      {/* 칸 높이는 내용에 맞춰 늘어난다. 빈 칸도 놓을 자리가 보이도록 최소 높이는 여기 둔다 */}
+      <div className="flex min-h-6 flex-wrap gap-1.5">
         {items.map((item) => (
           <ItemToken key={item.id} item={item} slot={slot} onSelect={onSelect} />
         ))}
@@ -566,7 +563,8 @@ export function FridgeView({
                 >
                   {freezerCount > 0 && (
                     <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-sky-800 shadow">
-                      ❄ 냉동 {freezerCount}개
+                      <UiArt name="snowflake" className="mr-1 size-3.5 align-[-2px]" />
+                      냉동 {freezerCount}개
                     </span>
                   )}
                 </Door>

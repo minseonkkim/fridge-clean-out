@@ -188,6 +188,12 @@ function MealRow({
           ))}
         </span>
       </Link>
+      <Link
+        href={`/fridge#cook=${recipe.id}`}
+        className="mt-1 inline-flex min-h-11 items-center px-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+      >
+        🧊 냉장고에서 재료 보기
+      </Link>
     </li>
   );
 }

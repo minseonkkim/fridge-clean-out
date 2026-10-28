@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
 import { FlyAway, type FlyAwayRequest } from "@/components/fridge/fly-away";
 import { FridgeView } from "@/components/fridge/fridge-view";
@@ -11,6 +11,9 @@ import { ItemList, UrgencyBadges } from "@/components/item-list";
 import { useToast } from "@/components/toast";
 import { useFridge } from "@/lib/repo/fridge-context";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
+import { RECIPE_BY_ID } from "@/data/recipes";
+import { planCookUsage } from "@/lib/domain/cook";
+import { lookupWithPantry } from "@/lib/planner/preferences";
 import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
 import {
   SLOT_STORAGE,
@@ -23,6 +26,35 @@ import { SLOT_LABEL } from "@/lib/domain/fridge-view";
 import { storageChangePatch } from "@/lib/domain/item-edit";
 import { josa } from "@/lib/korean";
 import { PlanBody } from "../plan/plan-screen";
+
+/** 주소의 #cook=<레시피 id> (식단에서 넘어올 때) */
+function readCookHash(): string | null {
+  if (typeof window === "undefined") return null;
+  const m = /^#cook=([a-z0-9_]+)$/.exec(window.location.hash);
+  return m ? m[1] : null;
+}
+
+function useCookHash(): string | null {
+  return useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener("hashchange", onChange);
+      window.addEventListener(COOK_HASH_EVENT, onChange);
+      return () => {
+        window.removeEventListener("hashchange", onChange);
+        window.removeEventListener(COOK_HASH_EVENT, onChange);
+      };
+    },
+    readCookHash,
+    () => null,
+  );
+}
+
+const COOK_HASH_EVENT = "naengteol:cook-hash";
+
+function clearCookHash() {
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  window.dispatchEvent(new Event(COOK_HASH_EVENT));
+}
 
 type View = "fridge" | "list";
 const VIEW_OPTIONS = [
@@ -61,6 +93,17 @@ export function FridgeHome() {
   // 브라우저 저장소를 읽지만, 보기는 snapshot(브라우저에서만 채워짐)이 있을 때만 그리므로 수화 불일치가 없다.
   const [view, setView] = useState<View>(loadView);
   const [fly, setFly] = useState<FlyAwayRequest | null>(null);
+  // 식단에서 "냉장고에서 재료 보기"로 들어오면 주소의 #cook=<레시피 id>로 그 요리의 재료를 강조한다.
+  const cookRecipeId = useCookHash();
+  const cookRecipe = cookRecipeId ? RECIPE_BY_ID.get(cookRecipeId) : undefined;
+  const highlight = useMemo(() => {
+    if (!cookRecipe || !snapshot) return null;
+    const lookup = lookupWithPantry(
+      (id) => INGREDIENT_BY_ID.get(id),
+      snapshot.preferences.disabledPantry,
+    );
+    return new Set(planCookUsage(cookRecipe, snapshot.items, lookup).usages.map((u) => u.itemId));
+  }, [cookRecipe, snapshot]);
   /** 고른 재료의 화면 위치 (다 씀·버림 연출의 출발점) */
   const selectedRect = useRef<FlyAwayRequest["from"] | null>(null);
 
@@ -142,6 +185,32 @@ export function FridgeHome() {
                 saveView(v);
               }}
             />
+            {cookRecipe && highlight && (
+              <div
+                role="status"
+                aria-label="요리 재료 강조"
+                className="flex items-center justify-between gap-2 rounded-2xl bg-emerald-50 p-3 text-sm dark:bg-emerald-950"
+              >
+                <span>
+                  🍳 <b>{cookRecipe.name}</b>에 쓰는 재료 {highlight.size}개를 밝게 표시했어요
+                </span>
+                <span className="flex shrink-0 gap-1">
+                  <Link
+                    href={`/recipes/${cookRecipe.id}`}
+                    className="min-h-11 content-center px-2 font-semibold text-emerald-700 dark:text-emerald-300"
+                  >
+                    레시피
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={clearCookHash}
+                    className="min-h-11 px-2 text-neutral-500"
+                  >
+                    해제
+                  </button>
+                </span>
+              </div>
+            )}
             {view === "fridge" ? (
               <>
                 {snapshot.items.length === 0 && (
@@ -149,7 +218,12 @@ export function FridgeHome() {
                     냉장고가 비어 있어요. 오른쪽 아래 + 버튼으로 재료를 넣어 보세요.
                   </p>
                 )}
-                <FridgeView items={snapshot.items} onSelect={selectItem} onMove={moveItem} />
+                <FridgeView
+                  items={snapshot.items}
+                  onSelect={selectItem}
+                  onMove={moveItem}
+                  highlight={highlight}
+                />
               </>
             ) : (
               <ItemList items={snapshot.items} onSelect={selectItem} />

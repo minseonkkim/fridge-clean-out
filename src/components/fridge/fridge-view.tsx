@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fillReference } from "@/lib/domain/quantity-visual";
 import { CompartmentZoom, ZoomContext, useZoom, type ZoomRequest } from "./compartment-zoom";
 import { QuantityGlyph } from "./quantity-glyph";
@@ -21,6 +21,9 @@ import { SLOT_LABEL, groupBySlot, urgencySummary } from "@/lib/domain/fridge-vie
 import { UNIT_LABEL } from "@/lib/domain/types";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
+
+/** 밝게 보여 줄 재료 id. null이면 모두 평소대로. */
+const HighlightContext = createContext<ReadonlySet<string> | null>(null);
 
 const TONE: Record<Freshness, string> = {
   fresh: "bg-white ring-neutral-200 dark:bg-neutral-800 dark:ring-neutral-700",
@@ -47,6 +50,8 @@ function ItemToken({
   const [popping, setPopping] = useState(false);
   const drag = useDrag();
   const dragging = drag?.drag?.item.id === item.id;
+  const highlight = use(HighlightContext);
+  const lit = highlight ? highlight.has(item.id) : null;
 
   // 길게 누르면 드래그 시작. 기다리는 동안 움직이면 스크롤로 보고 취소한다.
   const press = useRef<{
@@ -121,6 +126,7 @@ function ItemToken({
       aria-describedby="drag-hint"
       data-item-id={item.id}
       data-freshness={level}
+      data-highlight={lit === null ? undefined : lit ? "on" : "off"}
       data-popping={popping || undefined}
       className={`relative flex min-h-11 max-w-full flex-col items-center justify-center overflow-hidden rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
         popping
@@ -128,7 +134,9 @@ function ItemToken({
           : level === "urgent"
             ? "animate-[item-wobble_1.6s_ease-in-out_infinite] motion-reduce:animate-none"
             : ""
-      } ${level === "expired" ? "grayscale" : ""} ${dragging ? "opacity-40" : ""}`}
+      } ${level === "expired" ? "grayscale" : ""} ${dragging ? "opacity-40" : ""} ${
+        lit === true ? "ring-4 ring-emerald-500" : lit === false ? "opacity-30 saturate-50" : ""
+      }`}
     >
       <QuantityGlyph
         quantity={item.quantity}
@@ -299,11 +307,14 @@ export function FridgeView({
   items,
   onSelect,
   onMove,
+  highlight = null,
 }: {
   items: FridgeItem[];
   onSelect?: (item: FridgeItem) => void;
   /** 재료를 다른 칸으로 끌어다 놓았을 때 */
   onMove?: (item: FridgeItem, to: CompartmentSlot) => void;
+  /** 밝게 보여 줄 재료 (나머지는 어둡게). 식단의 요리에 쓰이는 재료 */
+  highlight?: ReadonlySet<string> | null;
 }) {
   const bySlot = useMemo(() => {
     const map = new Map<CompartmentSlot, FridgeItem[]>();
@@ -313,6 +324,14 @@ export function FridgeView({
   const at = (slot: CompartmentSlot) => bySlot.get(slot) ?? [];
 
   const [open, setOpen] = useState(loadDoor);
+  // 식단에서 '냉장고에서 재료 보기'로 들어오면 문을 연다. 강조를 해제해도 문은 열린 채로 둔다.
+  // (이전 렌더의 값을 기억해 바뀔 때만 상태를 맞추는 React 권장 패턴)
+  const [prevHighlight, setPrevHighlight] = useState(highlight);
+  if (highlight !== prevHighlight) {
+    setPrevHighlight(highlight);
+    if (highlight) setOpen(true);
+  }
+  const doorOpen = open || Boolean(highlight);
   const [zoom, setZoom] = useState<ZoomRequest | null>(null);
   const closeZoom = useCallback(() => setZoom(null), []);
 
@@ -366,7 +385,7 @@ export function FridgeView({
   // 버튼·링크·입력, 시트(dialog), 탭바를 누를 때는 닫지 않는다.
   const cabinetRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!open) return;
+    if (!doorOpen) return;
     function onPointerDown(e: PointerEvent) {
       const target = e.target as HTMLElement | null;
       if (!target || cabinetRef.current?.contains(target)) return;
@@ -382,166 +401,172 @@ export function FridgeView({
     }
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
+  }, [doorOpen]);
 
   const interior = `transition-[filter] duration-500 motion-reduce:transition-none ${
-    open ? "brightness-100" : "brightness-75"
+    doorOpen ? "brightness-100" : "brightness-75"
   }`;
 
   return (
     <ZoomContext value={setZoom}>
       <DragContext value={dragApi}>
-        <span id="drag-hint" className="sr-only">
-          길게 눌러 다른 칸으로 옮길 수 있어요. 재료 시트에서 보관 방식을 바꿔도 돼요.
-        </span>
-        <span id="zoom-hint" className="sr-only">
-          누르면 이 칸을 크게 봐요
-        </span>
-        {/* isolate: 3D 원근 효과가 고정된 탭바·버튼 위로 올라오지 않도록 냉장고를 자체 쌓임 맥락에 가둔다. */}
-        <div className="relative isolate z-0 flex flex-col gap-3 sm:flex-row">
-          <div
-            ref={cabinetRef}
-            aria-label="냉장고"
-            role="group"
-            className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 [perspective:1400px] dark:border-neutral-700 dark:bg-neutral-900"
-          >
-            {/* 냉장실 */}
+        <HighlightContext value={highlight}>
+          <span id="drag-hint" className="sr-only">
+            길게 눌러 다른 칸으로 옮길 수 있어요. 재료 시트에서 보관 방식을 바꿔도 돼요.
+          </span>
+          <span id="zoom-hint" className="sr-only">
+            누르면 이 칸을 크게 봐요
+          </span>
+          {/* isolate: 3D 원근 효과가 고정된 탭바·버튼 위로 올라오지 않도록 냉장고를 자체 쌓임 맥락에 가둔다. */}
+          <div className="relative isolate z-0 flex flex-col gap-3 sm:flex-row">
             <div
-              aria-label="냉장실"
+              ref={cabinetRef}
+              aria-label="냉장고"
               role="group"
-              className="relative flex flex-1 rounded-t-[1.25rem] bg-sky-50/70 dark:bg-sky-950/40"
+              className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 [perspective:1400px] dark:border-neutral-700 dark:bg-neutral-900"
             >
-              <div inert={!open} aria-hidden={!open} className={`flex flex-1 ${interior}`}>
-                <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
+              {/* 냉장실 */}
+              <div
+                aria-label="냉장실"
+                role="group"
+                className="relative flex flex-1 rounded-t-[1.25rem] bg-sky-50/70 dark:bg-sky-950/40"
+              >
+                <div
+                  inert={!doorOpen}
+                  aria-hidden={!doorOpen}
+                  className={`flex flex-1 ${interior}`}
+                >
+                  <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
+                    <Compartment
+                      slot="fridge_top"
+                      items={at("fridge_top")}
+                      onSelect={onSelect}
+                      className="flex-1"
+                    />
+                    <Compartment
+                      slot="fridge_middle"
+                      items={at("fridge_middle")}
+                      onSelect={onSelect}
+                      className="flex-1"
+                    />
+                    <Compartment
+                      slot="fridge_bottom"
+                      items={at("fridge_bottom")}
+                      onSelect={onSelect}
+                      className="flex-1"
+                    />
+                    <Compartment
+                      slot="veg_drawer"
+                      items={at("veg_drawer")}
+                      onSelect={onSelect}
+                      className="m-1 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40"
+                    />
+                  </div>
                   <Compartment
-                    slot="fridge_top"
-                    items={at("fridge_top")}
+                    slot="fridge_door"
+                    items={at("fridge_door")}
                     onSelect={onSelect}
-                    className="flex-1"
-                  />
-                  <Compartment
-                    slot="fridge_middle"
-                    items={at("fridge_middle")}
-                    onSelect={onSelect}
-                    className="flex-1"
-                  />
-                  <Compartment
-                    slot="fridge_bottom"
-                    items={at("fridge_bottom")}
-                    onSelect={onSelect}
-                    className="flex-1"
-                  />
-                  <Compartment
-                    slot="veg_drawer"
-                    items={at("veg_drawer")}
-                    onSelect={onSelect}
-                    className="m-1 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40"
+                    className="w-28 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
                   />
                 </div>
-                <Compartment
-                  slot="fridge_door"
-                  items={at("fridge_door")}
-                  onSelect={onSelect}
-                  className="w-28 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
-                />
-              </div>
-              <Door
-                open={open}
-                onOpen={openDoor}
-                label="냉장실 문 열기"
-                className="rounded-t-[1.25rem]"
-              >
-                <span className="flex flex-col items-start gap-2">
-                  {summary.today > 0 && (
-                    <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white shadow">
-                      오늘까지 {summary.today}
-                    </span>
-                  )}
-                  {summary.soon > 0 && (
-                    <span className="rounded-full bg-amber-400 px-3 py-1 text-sm font-bold text-amber-950 shadow">
-                      3일 안에 {summary.soon}
-                    </span>
-                  )}
-                  {summary.expired > 0 && (
-                    <span className="rounded-full bg-neutral-500 px-3 py-1 text-sm font-bold text-white shadow">
-                      기한 지남 {summary.expired}
-                    </span>
-                  )}
-                </span>
-              </Door>
-            </div>
-
-            {/* 냉장실·냉동실 경계 */}
-            <div aria-hidden className="h-2 bg-neutral-300 dark:bg-neutral-700" />
-
-            {/* 냉동실 */}
-            <div
-              aria-label="냉동실"
-              role="group"
-              className="relative rounded-b-[1.25rem] bg-indigo-50/70 dark:bg-indigo-950/40"
-            >
-              <div
-                inert={!open}
-                aria-hidden={!open}
-                className={`flex flex-col gap-1 p-1 ${interior}`}
-              >
-                <FreezerDrawer
-                  slot="freezer_upper"
-                  items={at("freezer_upper")}
-                  onSelect={onSelect}
-                />
-                <FreezerDrawer
-                  slot="freezer_lower"
-                  items={at("freezer_lower")}
-                  onSelect={onSelect}
-                />
-              </div>
-              <Door
-                open={open}
-                onOpen={openDoor}
-                label="냉동실 문 열기"
-                className="rounded-b-[1.25rem]"
-              >
-                {freezerCount > 0 && (
-                  <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-sky-800 shadow">
-                    ❄ 냉동 {freezerCount}개
+                <Door
+                  open={doorOpen}
+                  onOpen={openDoor}
+                  label="냉장실 문 열기"
+                  className="rounded-t-[1.25rem]"
+                >
+                  <span className="flex flex-col items-start gap-2">
+                    {summary.today > 0 && (
+                      <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white shadow">
+                        오늘까지 {summary.today}
+                      </span>
+                    )}
+                    {summary.soon > 0 && (
+                      <span className="rounded-full bg-amber-400 px-3 py-1 text-sm font-bold text-amber-950 shadow">
+                        3일 안에 {summary.soon}
+                      </span>
+                    )}
+                    {summary.expired > 0 && (
+                      <span className="rounded-full bg-neutral-500 px-3 py-1 text-sm font-bold text-white shadow">
+                        기한 지남 {summary.expired}
+                      </span>
+                    )}
                   </span>
-                )}
-              </Door>
+                </Door>
+              </div>
+
+              {/* 냉장실·냉동실 경계 */}
+              <div aria-hidden className="h-2 bg-neutral-300 dark:bg-neutral-700" />
+
+              {/* 냉동실 */}
+              <div
+                aria-label="냉동실"
+                role="group"
+                className="relative rounded-b-[1.25rem] bg-indigo-50/70 dark:bg-indigo-950/40"
+              >
+                <div
+                  inert={!doorOpen}
+                  aria-hidden={!doorOpen}
+                  className={`flex flex-col gap-1 p-1 ${interior}`}
+                >
+                  <FreezerDrawer
+                    slot="freezer_upper"
+                    items={at("freezer_upper")}
+                    onSelect={onSelect}
+                  />
+                  <FreezerDrawer
+                    slot="freezer_lower"
+                    items={at("freezer_lower")}
+                    onSelect={onSelect}
+                  />
+                </div>
+                <Door
+                  open={doorOpen}
+                  onOpen={openDoor}
+                  label="냉동실 문 열기"
+                  className="rounded-b-[1.25rem]"
+                >
+                  {freezerCount > 0 && (
+                    <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-sky-800 shadow">
+                      ❄ 냉동 {freezerCount}개
+                    </span>
+                  )}
+                </Door>
+              </div>
+            </div>
+
+            {/* 팬트리: 문이 없는 선반 */}
+            <div
+              aria-label="팬트리"
+              role="group"
+              className="rounded-3xl border-4 border-amber-200 bg-amber-50/60 sm:w-40 dark:border-amber-900 dark:bg-amber-950/30"
+            >
+              <Compartment slot="pantry" items={at("pantry")} onSelect={onSelect} />
             </div>
           </div>
-
-          {/* 팬트리: 문이 없는 선반 */}
-          <div
-            aria-label="팬트리"
-            role="group"
-            className="rounded-3xl border-4 border-amber-200 bg-amber-50/60 sm:w-40 dark:border-amber-900 dark:bg-amber-950/30"
-          >
-            <Compartment slot="pantry" items={at("pantry")} onSelect={onSelect} />
-          </div>
-        </div>
-        {zoom && (
-          <CompartmentZoom
-            request={zoom}
-            items={at(zoom.slot)}
-            onClose={closeZoom}
-            renderItem={(item) => (
-              <ItemToken key={item.id} item={item} slot={zoom.slot} onSelect={onSelect} />
-            )}
-          />
-        )}
-        {drag && (
-          <div
-            aria-hidden
-            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white px-3 py-2 text-sm font-semibold shadow-2xl ring-2 ring-emerald-500 dark:bg-neutral-800"
-            style={{ left: drag.x, top: drag.y }}
-          >
-            {itemDisplayName(drag.item, lookup)}
-            {drag.over && drag.over !== drag.from && (
-              <span className="ml-2 text-xs text-emerald-700">→ {SLOT_LABEL[drag.over]}</span>
-            )}
-          </div>
-        )}
+          {zoom && (
+            <CompartmentZoom
+              request={zoom}
+              items={at(zoom.slot)}
+              onClose={closeZoom}
+              renderItem={(item) => (
+                <ItemToken key={item.id} item={item} slot={zoom.slot} onSelect={onSelect} />
+              )}
+            />
+          )}
+          {drag && (
+            <div
+              aria-hidden
+              className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white px-3 py-2 text-sm font-semibold shadow-2xl ring-2 ring-emerald-500 dark:bg-neutral-800"
+              style={{ left: drag.x, top: drag.y }}
+            >
+              {itemDisplayName(drag.item, lookup)}
+              {drag.over && drag.over !== drag.from && (
+                <span className="ml-2 text-xs text-emerald-700">→ {SLOT_LABEL[drag.over]}</span>
+              )}
+            </div>
+          )}
+        </HighlightContext>
       </DragContext>
     </ZoomContext>
   );

@@ -119,10 +119,10 @@ function ShoppingBody({ items }: { items: FridgeItem[] }) {
           <ul className="flex flex-col gap-2">
             {suggestions.slice(0, 8).map((s) => (
               <li key={s.recipe.id} className="rounded-2xl bg-neutral-50 p-3 dark:bg-neutral-900">
-                <div className="flex items-baseline justify-between gap-2">
+                <div className="flex items-center justify-between gap-2">
                   <Link
                     href={`/recipes/${s.recipe.id}`}
-                    className="font-semibold underline-offset-4 hover:underline"
+                    className="min-h-11 flex-1 content-center font-semibold underline-offset-4 hover:underline"
                   >
                     {s.recipe.name}
                   </Link>

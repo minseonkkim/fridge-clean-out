@@ -19,7 +19,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
         <LoginArea searchParams={searchParams} />
       </Suspense>
 
-      <Link href="/fridge" className="text-center text-neutral-600 underline underline-offset-4">
+      <Link href="/fridge" className="min-h-11 content-center text-center text-neutral-600 underline underline-offset-4">
         로그인 없이 시작
       </Link>
     </main>

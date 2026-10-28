@@ -106,7 +106,7 @@ export function PreferencesSection() {
           )}
           <Link
             href="/onboarding"
-            className="self-start text-sm text-emerald-700 underline underline-offset-4"
+            className="min-h-11 content-center self-start text-sm text-emerald-700 underline underline-offset-4"
           >
             처음 설정 다시 하기
           </Link>

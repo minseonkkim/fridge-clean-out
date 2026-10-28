@@ -214,7 +214,7 @@ function Compartment({
             onClick={() =>
               sectionRef.current && zoom({ slot, from: sectionRef.current.getBoundingClientRect() })
             }
-            className="-mx-1 rounded px-1 underline decoration-dotted underline-offset-2"
+            className="-mx-2 -mt-2 flex min-h-11 w-[calc(100%+1rem)] items-center rounded-t-xl px-2 underline decoration-dotted underline-offset-2"
           >
             {SLOT_LABEL[slot]}
           </button>

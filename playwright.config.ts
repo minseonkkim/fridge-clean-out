@@ -8,6 +8,8 @@ const PORT = 3100;
  */
 export default defineConfig({
   testDir: "./e2e",
+  // 성능 측정은 다른 테스트와 함께 돌면 숫자가 흔들려 따로 돌린다 (npm run test:perf)
+  testIgnore: "performance.spec.ts",
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",

@@ -202,7 +202,8 @@ function Compartment({
       ref={sectionRef}
       aria-labelledby={id}
       data-slot={slot}
-      className={`flex min-h-16 flex-col gap-1 p-2 transition-colors ${className} ${dropClass(slot, drag)}`}
+      // 화면 밖 칸은 브라우저가 그리기를 건너뛴다 (재료가 많을 때 스크롤·애니메이션 비용 절감)
+      className={`flex min-h-16 flex-col gap-1 p-2 transition-colors [contain-intrinsic-size:auto_4rem] [content-visibility:auto] ${className} ${dropClass(slot, drag)}`}
     >
       <h3 id={id} className="text-[11px] font-semibold text-neutral-400">
         {zoom ? (

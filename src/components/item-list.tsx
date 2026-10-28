@@ -54,8 +54,9 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
   const left = daysLeft(item.expiresAt, todayIso());
   const level = freshness(left);
   const name = itemDisplayName(item, lookup);
+  // 화면 밖 줄은 그리지 않는다 (재료가 수백 개여도 보이는 줄만 렌더)
   return (
-    <li>
+    <li className="[contain-intrinsic-size:auto_3.5rem] [content-visibility:auto]">
       <button
         type="button"
         onClick={() => onSelect?.(item)}

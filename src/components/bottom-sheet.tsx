@@ -6,6 +6,11 @@ import { useEffect, useRef, type PointerEvent, type ReactNode } from "react";
 const CLOSE_DISTANCE_PX = 100;
 const CLOSE_VELOCITY = 0.6; // px/ms
 
+/** 레이아웃 아래 끝에서 실제로 보이는 영역 아래 끝까지의 거리 (= 키보드가 가린 높이) */
+export function keyboardInset(layoutHeight: number, visualHeight: number, visualTop: number) {
+  return Math.max(0, Math.round(layoutHeight - visualHeight - visualTop));
+}
+
 interface BottomSheetProps {
   open: boolean;
   onClose: () => void;
@@ -54,6 +59,28 @@ export function BottomSheet({ open, onClose, title, children, footer }: BottomSh
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  // iOS 사파리는 키보드가 올라와도 레이아웃이 줄지 않아 아래 붙은 등록 버튼이 가려진다.
+  // 실제로 보이는 영역(visualViewport) 아래 끝에 시트를 붙인다.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const dialog = ref.current;
+    if (!open || !vv || !dialog) return;
+    const fit = () => {
+      const inset = keyboardInset(window.innerHeight, vv.height, vv.offsetTop);
+      dialog.style.bottom = inset > 0 ? `${inset}px` : "";
+      dialog.style.maxHeight = inset > 0 ? `${Math.floor(vv.height * 0.9)}px` : "";
+    };
+    fit();
+    vv.addEventListener("resize", fit);
+    vv.addEventListener("scroll", fit);
+    return () => {
+      vv.removeEventListener("resize", fit);
+      vv.removeEventListener("scroll", fit);
+      dialog.style.bottom = "";
+      dialog.style.maxHeight = "";
+    };
   }, [open]);
 
   return (

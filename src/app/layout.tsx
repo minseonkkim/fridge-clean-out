@@ -23,6 +23,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // 안드로이드 크롬: 키보드가 올라오면 레이아웃이 줄어들어 아래 고정 버튼이 키보드 위로 올라온다
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: THEME_COLOR },
     { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },

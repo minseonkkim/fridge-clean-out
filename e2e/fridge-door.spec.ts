@@ -24,7 +24,10 @@ test.describe("냉장고 문", () => {
 
     await fridgeDoor.click();
     await expect(page.getByRole("button", { name: "냉장실 문 열기" })).toHaveCount(0);
-    await page.getByRole("button", { name: /^숙주/ }).click();
+    const sprouts = page.getByRole("button", { name: /^숙주/ });
+    await sprouts.click();
+    // 누른 재료가 튀어 오르는 애니메이션이 걸린다
+    await expect(sprouts).toHaveAttribute("data-popping", "true");
     await expect(page.getByRole("dialog", { name: "숙주" })).toBeVisible();
   });
 

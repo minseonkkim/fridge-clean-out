@@ -32,6 +32,19 @@
   }
 }
 
+/* 냉장고 안 재료를 누르면 살짝 튀어 오른다 */
+@keyframes item-pop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-8px) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

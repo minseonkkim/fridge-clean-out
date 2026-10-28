@@ -27,12 +27,21 @@ function ItemToken({
   const level = freshness(left);
   const name = itemDisplayName(item, lookup);
   const qty = `${Math.round(item.quantity * 100) / 100}${UNIT_LABEL[item.unit]}`;
+  // 누르면 살짝 튀어 오르며 선택된다 (기획서 3.2절). 애니메이션이 끝나면 다시 누를 때를 위해 해제한다.
+  const [popping, setPopping] = useState(false);
   return (
     <button
       type="button"
-      onClick={() => onSelect?.(item)}
+      onClick={() => {
+        setPopping(true);
+        onSelect?.(item);
+      }}
+      onAnimationEnd={() => setPopping(false)}
       aria-label={`${name} ${qty} ${dDayLabel(left)}`}
-      className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-xs ring-2 ${TONE[level]}`}
+      data-popping={popping || undefined}
+      className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-xs ring-2 ${TONE[level]} ${
+        popping ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none" : ""
+      }`}
     >
       <span className="max-w-20 truncate font-semibold">{name}</span>
       <span className="text-[10px] text-neutral-500">

@@ -6,11 +6,13 @@ import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
 import { itemDisplayName, type FridgeItem, type ItemPatch } from "@/lib/domain/fridge";
 import { SLOT_LABEL, slotOf } from "@/lib/domain/fridge-view";
 import { diffPatch, stepQuantity, storageChangePatch } from "@/lib/domain/item-edit";
+import { fillReference } from "@/lib/domain/quantity-visual";
 import { STORAGE_LABEL, STORAGES, UNIT_LABEL, type Storage } from "@/lib/domain/types";
 import { josa } from "@/lib/korean";
 import { useFridge } from "@/lib/repo/fridge-context";
 import { BottomSheet } from "./bottom-sheet";
 import { Segmented } from "./segmented";
+import { QuantityGlyph } from "./fridge/quantity-glyph";
 import { Stepper } from "./stepper";
 
 const lookup = (id: string) => INGREDIENT_BY_ID.get(id);
@@ -33,6 +35,8 @@ export function ItemDetailSheet({
   const ids = { memo: useId(), exp: useId() };
 
   const [quantity, setQuantity] = useState(item.quantity);
+  // 시트를 연 시점의 양을 기준으로 채움을 그려, 줄이면 줄어드는 게 바로 보이게 한다.
+  const [glyphReference] = useState(() => fillReference(item.quantity, ingredient?.usePerRecipe));
   const [storage, setStorage] = useState<Storage>(item.storage);
   const [memo, setMemo] = useState(item.memo ?? "");
   const [manualExpiry, setManualExpiry] = useState<string | null>(null);
@@ -110,6 +114,15 @@ export function ItemDetailSheet({
         </p>
 
         <div className="flex flex-col items-center gap-2">
+          <span data-testid="quantity-glyph" className="flex min-h-14 items-end">
+            <QuantityGlyph
+              quantity={quantity}
+              unit={item.unit}
+              reference={glyphReference}
+              category={ingredient?.category ?? null}
+              size="lg"
+            />
+          </span>
           <Stepper
             label="수량"
             value={`${quantity}${UNIT_LABEL[item.unit]}`}

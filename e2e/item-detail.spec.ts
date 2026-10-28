@@ -31,6 +31,26 @@ test.describe("재료 상세 시트", () => {
     await expect(page.getByRole("button", { name: /양파/ })).toContainText("2개");
   });
 
+  test("수량을 바꾸면 그림(개수 쌓기·채움 정도)이 따라 바뀐다", async ({ page }) => {
+    await page.getByRole("button", { name: /^양파/ }).click();
+    const sheet = page.getByRole("dialog", { name: "양파" });
+    const glyph = sheet.getByTestId("quantity-glyph").locator("[data-stack]");
+    await expect(glyph).toHaveAttribute("data-stack", "3");
+    await sheet.getByRole("button", { name: "수량 줄이기" }).click();
+    await expect(glyph).toHaveAttribute("data-stack", "2");
+    await sheet.getByRole("button", { name: "닫기" }).first().click();
+
+    await page.getByRole("button", { name: /^돼지고기/ }).click();
+    const pork = page.getByRole("dialog", { name: "돼지고기" });
+    const fill = pork.getByTestId("quantity-glyph").locator("[data-fill]");
+    const before = Number(await fill.getAttribute("data-fill"));
+    await pork.getByRole("button", { name: "수량 줄이기" }).click();
+    await pork.getByRole("button", { name: "수량 줄이기" }).click();
+    await expect
+      .poll(async () => Number(await fill.getAttribute("data-fill")))
+      .toBeLessThan(before);
+  });
+
   test("길게 누르면 연속으로 줄어든다", async ({ page }) => {
     await page.getByRole("button", { name: /돼지고기/ }).click();
     const sheet = page.getByRole("dialog", { name: "돼지고기" });

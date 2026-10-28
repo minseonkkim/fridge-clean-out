@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { fillReference } from "@/lib/domain/quantity-visual";
 import { CompartmentZoom, ZoomContext, useZoom, type ZoomRequest } from "./compartment-zoom";
+import { QuantityGlyph } from "./quantity-glyph";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type CompartmentSlot, type FridgeItem } from "@/lib/domain/fridge";
@@ -27,6 +29,7 @@ function ItemToken({
   const left = daysLeft(item.expiresAt, todayIso());
   const level = freshness(left);
   const name = itemDisplayName(item, lookup);
+  const ingredient = item.ingredientId ? lookup(item.ingredientId) : undefined;
   const qty = `${Math.round(item.quantity * 100) / 100}${UNIT_LABEL[item.unit]}`;
   // 누르면 살짝 튀어 오르며 선택된다 (기획서 3.2절). 애니메이션이 끝나면 다시 누를 때를 위해 해제한다.
   const [popping, setPopping] = useState(false);
@@ -44,6 +47,12 @@ function ItemToken({
         popping ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none" : ""
       }`}
     >
+      <QuantityGlyph
+        quantity={item.quantity}
+        unit={item.unit}
+        reference={fillReference(item.quantity, ingredient?.usePerRecipe)}
+        category={ingredient?.category ?? null}
+      />
       <span className="max-w-20 truncate font-semibold">{name}</span>
       <span className="text-[10px] text-neutral-500">
         {qty} · {dDayLabel(left)}

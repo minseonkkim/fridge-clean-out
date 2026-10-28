@@ -5,6 +5,7 @@ import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
 import { FlyAway, type FlyAwayRequest } from "@/components/fridge/fly-away";
 import { FridgeView } from "@/components/fridge/fridge-view";
+import { MissingSilhouettes } from "@/components/fridge/missing-silhouettes";
 import { Segmented } from "@/components/segmented";
 import { ItemDetailSheet } from "@/components/item-detail-sheet";
 import { ItemList, UrgencyBadges } from "@/components/item-list";
@@ -227,6 +228,15 @@ export function FridgeHome() {
               </>
             ) : (
               <ItemList items={snapshot.items} onSelect={selectItem} />
+            )}
+            {cookRecipe && (
+              <MissingSilhouettes
+                key={cookRecipe.id}
+                recipe={cookRecipe}
+                items={snapshot.items}
+                disabledPantry={snapshot.preferences.disabledPantry}
+                onMessage={show}
+              />
             )}
           </>
         )}

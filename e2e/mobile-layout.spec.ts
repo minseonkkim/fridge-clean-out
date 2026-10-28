@@ -100,3 +100,39 @@ for (const width of [360, 430]) {
     });
   });
 }
+
+test.describe("엄지 영역", () => {
+  test("자주 쓰는 버튼은 화면 아래 절반에 있다", async ({ page }) => {
+    const height = page.viewportSize()!.height;
+    const inLowerHalf = async (name: string | RegExp) => {
+      const box = (await page
+        .getByRole("button", { name, exact: typeof name === "string" })
+        .boundingBox())!;
+      expect(box.y + box.height / 2, String(name)).toBeGreaterThan(height / 2);
+      expect(box.y + box.height, String(name)).toBeLessThanOrEqual(height);
+    };
+
+    await page.goto("/fridge");
+    await inLowerHalf("재료 추가");
+    await page.getByRole("button", { name: "재료 추가" }).click();
+    const sheet = page.getByRole("dialog", { name: "재료 추가" });
+    await sheet.getByRole("combobox", { name: "이름" }).fill("돼지고기");
+    await inLowerHalf("냉장고에 넣기");
+    await sheet.getByRole("radio", { name: "한 번에 여러 개" }).click();
+    await sheet.getByRole("textbox").fill("김치 500g, 돼지고기 150g");
+    await inLowerHalf("2개 냉장고에 넣기");
+    await sheet.getByRole("button", { name: "2개 냉장고에 넣기" }).click();
+    await expect(sheet).toBeHidden();
+
+    await page.goto("/recipes/kimchi_stew");
+    await inLowerHalf("요리 완료");
+
+    await page.goto("/shopping");
+    await page
+      .getByRole("button", { name: /장보기에 담기|담기/ })
+      .first()
+      .click();
+    await page.getByRole("list", { name: "장보기 목록" }).getByRole("checkbox").first().check();
+    await inLowerHalf(/냉장고에 넣기$/);
+  });
+});

@@ -38,17 +38,20 @@ export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void 
             {checked.length}/{shopping.length}
           </span>
         </h2>
-        {checked.length > 0 && (
+      </div>
+      {/* 자주 누르는 버튼이라 엄지가 닿는 화면 아래에 띄운다 */}
+      {checked.length > 0 && (
+        <>
           <button
             type="button"
             onClick={moveToFridge}
             disabled={moving}
-            className="min-h-11 rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white disabled:opacity-50"
+            className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-30 mx-auto min-h-14 max-w-md rounded-2xl bg-emerald-600 text-lg font-bold text-white shadow-lg disabled:opacity-50"
           >
             {moving ? "넣는 중…" : `체크한 ${checked.length}개 냉장고에 넣기`}
           </button>
-        )}
-      </div>
+        </>
+      )}
       {shopping.length === 0 ? (
         <p className="text-sm text-neutral-500">위 추천에서 담거나, 필요한 재료를 담아 두세요.</p>
       ) : (
@@ -92,6 +95,8 @@ export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void 
           ))}
         </ul>
       )}
+      {/* 아래에 뜬 버튼이 목록 끝을 가리지 않게 */}
+      {checked.length > 0 && <div aria-hidden className="h-16" />}
     </section>
   );
 }

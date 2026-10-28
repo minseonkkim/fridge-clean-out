@@ -120,10 +120,15 @@ function ItemToken({
       aria-label={`${name} ${qty} ${dDayLabel(left)}`}
       aria-describedby="drag-hint"
       data-item-id={item.id}
+      data-freshness={level}
       data-popping={popping || undefined}
-      className={`flex min-h-11 max-w-full flex-col items-center justify-center overflow-hidden rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
-        popping ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none" : ""
-      } ${dragging ? "opacity-40" : ""}`}
+      className={`relative flex min-h-11 max-w-full flex-col items-center justify-center overflow-hidden rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
+        popping
+          ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none"
+          : level === "urgent"
+            ? "animate-[item-wobble_1.6s_ease-in-out_infinite] motion-reduce:animate-none"
+            : ""
+      } ${level === "expired" ? "grayscale" : ""} ${dragging ? "opacity-40" : ""}`}
     >
       <QuantityGlyph
         quantity={item.quantity}
@@ -136,6 +141,15 @@ function ItemToken({
       <span className="text-[10px] text-neutral-500">
         {qty} · {dDayLabel(left)}
       </span>
+      {level === "expired" && (
+        <span
+          aria-hidden
+          data-fly-icon
+          className="absolute top-0.5 right-0.5 text-[11px] grayscale-0"
+        >
+          🪰
+        </span>
+      )}
     </button>
   );
 }

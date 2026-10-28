@@ -9,6 +9,18 @@ import { ItemDetailSheet } from "@/components/item-detail-sheet";
 import { ItemList, UrgencyBadges } from "@/components/item-list";
 import { useToast } from "@/components/toast";
 import { useFridge } from "@/lib/repo/fridge-context";
+import { INGREDIENT_BY_ID } from "@/data/ingredients";
+import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
+import {
+  SLOT_STORAGE,
+  itemDisplayName,
+  type CompartmentSlot,
+  type FridgeItem,
+  type ItemPatch,
+} from "@/lib/domain/fridge";
+import { SLOT_LABEL } from "@/lib/domain/fridge-view";
+import { storageChangePatch } from "@/lib/domain/item-edit";
+import { josa } from "@/lib/korean";
 import { PlanBody } from "../plan/plan-screen";
 
 type View = "fridge" | "list";
@@ -40,13 +52,34 @@ function saveView(view: View) {
  * 냉장고 홈. 냉장고 보기와, 같은 정보를 담은 목록 보기를 오간다 (기획서 3.5절).
  */
 export function FridgeHome() {
-  const { status, error, snapshot, mode } = useFridge();
+  const { status, error, snapshot, mode, updateItem } = useFridge();
   const [adding, setAdding] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = snapshot?.items.find((i) => i.id === selectedId) ?? null;
   const { show, toast } = useToast();
   // 브라우저 저장소를 읽지만, 보기는 snapshot(브라우저에서만 채워짐)이 있을 때만 그리므로 수화 불일치가 없다.
   const [view, setView] = useState<View>(loadView);
+
+  /** 끌어다 놓은 칸으로 옮긴다. 보관 방식이 바뀌면 기한을 다시 잡고 알려 준다 (기획서 3.2절). */
+  async function moveItem(item: FridgeItem, to: CompartmentSlot) {
+    const ingredient = item.ingredientId ? INGREDIENT_BY_ID.get(item.ingredientId) : undefined;
+    const today = todayIso();
+    const storage = SLOT_STORAGE[to];
+    const patch: ItemPatch = { ...storageChangePatch(item, storage, ingredient, today), slot: to };
+    const name = itemDisplayName(item, (id) => INGREDIENT_BY_ID.get(id));
+    try {
+      await updateItem(item.id, patch);
+      if (patch.expiresAt) {
+        show(
+          `${josa(name, "을", "를")} ${SLOT_LABEL[to]}에 넣었어요. 새 기한 ${patch.expiresAt} (${dDayLabel(daysLeft(patch.expiresAt, today))})`,
+        );
+      } else {
+        show(`${josa(name, "을", "를")} ${josa(SLOT_LABEL[to], "으로", "로")} 옮겼어요.`);
+      }
+    } catch (e) {
+      show(e instanceof Error ? e.message : String(e));
+    }
+  }
 
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-28 lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-10 lg:px-8">
@@ -105,7 +138,11 @@ export function FridgeHome() {
                     냉장고가 비어 있어요. 오른쪽 아래 + 버튼으로 재료를 넣어 보세요.
                   </p>
                 )}
-                <FridgeView items={snapshot.items} onSelect={(item) => setSelectedId(item.id)} />
+                <FridgeView
+                  items={snapshot.items}
+                  onSelect={(item) => setSelectedId(item.id)}
+                  onMove={moveItem}
+                />
               </>
             ) : (
               <ItemList items={snapshot.items} onSelect={(item) => setSelectedId(item.id)} />

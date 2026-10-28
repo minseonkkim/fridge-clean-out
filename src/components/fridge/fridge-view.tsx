@@ -4,6 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fillReference } from "@/lib/domain/quantity-visual";
 import { CompartmentZoom, ZoomContext, useZoom, type ZoomRequest } from "./compartment-zoom";
 import { QuantityGlyph } from "./quantity-glyph";
+import {
+  DragContext,
+  LONG_PRESS_MS,
+  MOVE_TOLERANCE_PX,
+  slotAt,
+  useDrag,
+  type DragApi,
+  type DragState,
+} from "./drag";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type CompartmentSlot, type FridgeItem } from "@/lib/domain/fridge";
@@ -21,9 +30,11 @@ const TONE: Record<Freshness, string> = {
 
 function ItemToken({
   item,
+  slot,
   onSelect,
 }: {
   item: FridgeItem;
+  slot: CompartmentSlot;
   onSelect?: (item: FridgeItem) => void;
 }) {
   const left = daysLeft(item.expiresAt, todayIso());
@@ -33,19 +44,84 @@ function ItemToken({
   const qty = `${Math.round(item.quantity * 100) / 100}${UNIT_LABEL[item.unit]}`;
   // 누르면 살짝 튀어 오르며 선택된다 (기획서 3.2절). 애니메이션이 끝나면 다시 누를 때를 위해 해제한다.
   const [popping, setPopping] = useState(false);
+  const drag = useDrag();
+  const dragging = drag?.drag?.item.id === item.id;
+
+  // 길게 누르면 드래그 시작. 기다리는 동안 움직이면 스크롤로 보고 취소한다.
+  const press = useRef<{
+    timer?: number;
+    x: number;
+    y: number;
+    started: boolean;
+    suppressClick: boolean;
+  }>({
+    x: 0,
+    y: 0,
+    started: false,
+    suppressClick: false,
+  });
+  const clearTimer = () => window.clearTimeout(press.current.timer);
+
   return (
     <button
       type="button"
+      onPointerDown={(e) => {
+        if (!drag || e.button !== 0) return;
+        const el = e.currentTarget;
+        const pointerId = e.pointerId;
+        press.current = { x: e.clientX, y: e.clientY, started: false, suppressClick: false };
+        press.current.timer = window.setTimeout(() => {
+          press.current.started = true;
+          press.current.suppressClick = true;
+          try {
+            el.setPointerCapture(pointerId);
+          } catch {
+            // 이미 손가락을 뗐으면 무시
+          }
+          navigator.vibrate?.(30);
+          drag.start(item, slot, press.current.x, press.current.y);
+        }, LONG_PRESS_MS);
+      }}
+      onPointerMove={(e) => {
+        if (press.current.started) {
+          drag?.move(e.clientX, e.clientY);
+        } else if (
+          Math.hypot(e.clientX - press.current.x, e.clientY - press.current.y) > MOVE_TOLERANCE_PX
+        ) {
+          clearTimer();
+        }
+      }}
+      onPointerUp={() => {
+        clearTimer();
+        if (press.current.started) {
+          press.current.started = false;
+          drag?.end();
+        }
+      }}
+      onPointerCancel={() => {
+        clearTimer();
+        if (press.current.started) {
+          press.current.started = false;
+          drag?.cancel();
+        }
+      }}
+      onContextMenu={(e) => e.preventDefault()}
       onClick={() => {
+        // 드래그로 끝난 누르기는 선택으로 치지 않는다.
+        if (press.current.suppressClick) {
+          press.current.suppressClick = false;
+          return;
+        }
         setPopping(true);
         onSelect?.(item);
       }}
       onAnimationEnd={() => setPopping(false)}
       aria-label={`${name} ${qty} ${dDayLabel(left)}`}
+      aria-describedby="drag-hint"
       data-popping={popping || undefined}
-      className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-xs ring-2 ${TONE[level]} ${
+      className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
         popping ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none" : ""
-      }`}
+      } ${dragging ? "opacity-40" : ""}`}
     >
       <QuantityGlyph
         quantity={item.quantity}
@@ -61,6 +137,14 @@ function ItemToken({
   );
 }
 
+/** 드래그 중 칸 강조: 놓을 수 있는 칸은 점선, 손가락 아래 칸은 진하게 */
+function dropClass(slot: CompartmentSlot, drag: DragApi | null): string {
+  const d = drag?.drag;
+  if (!d || d.from === slot) return "";
+  return d.over === slot
+    ? "outline-3 outline-emerald-600 bg-emerald-100/80 dark:bg-emerald-900/60"
+    : "outline-2 outline-dashed outline-emerald-400";
+}
 function Compartment({
   slot,
   items,
@@ -74,12 +158,14 @@ function Compartment({
 }) {
   const id = `compartment-${slot}`;
   const zoom = useZoom();
+  const drag = useDrag();
   const sectionRef = useRef<HTMLElement>(null);
   return (
     <section
       ref={sectionRef}
       aria-labelledby={id}
-      className={`flex min-h-16 flex-col gap-1 p-2 ${className}`}
+      data-slot={slot}
+      className={`flex min-h-16 flex-col gap-1 p-2 transition-colors ${className} ${dropClass(slot, drag)}`}
     >
       <h3 id={id} className="text-[11px] font-semibold text-neutral-400">
         {zoom ? (
@@ -100,7 +186,7 @@ function Compartment({
       </h3>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
-          <ItemToken key={item.id} item={item} onSelect={onSelect} />
+          <ItemToken key={item.id} item={item} slot={slot} onSelect={onSelect} />
         ))}
       </div>
     </section>
@@ -122,6 +208,7 @@ function FreezerDrawer({
   onSelect?: (item: FridgeItem) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const drag = useDrag();
   const id = `compartment-${slot}`;
   const preview = items
     .slice(0, 2)
@@ -129,7 +216,11 @@ function FreezerDrawer({
     .join(", ");
 
   return (
-    <section aria-labelledby={id} className="rounded-xl bg-white/70 dark:bg-neutral-800/60">
+    <section
+      aria-labelledby={id}
+      data-slot={slot}
+      className={`rounded-xl bg-white/70 transition-colors dark:bg-neutral-800/60 ${dropClass(slot, drag)}`}
+    >
       <button
         type="button"
         aria-expanded={open}
@@ -163,7 +254,7 @@ function FreezerDrawer({
             ) : (
               <div className="grid grid-cols-3 gap-1.5">
                 {items.map((item) => (
-                  <ItemToken key={item.id} item={item} onSelect={onSelect} />
+                  <ItemToken key={item.id} item={item} slot={slot} onSelect={onSelect} />
                 ))}
               </div>
             )}
@@ -183,9 +274,12 @@ function FreezerDrawer({
 export function FridgeView({
   items,
   onSelect,
+  onMove,
 }: {
   items: FridgeItem[];
   onSelect?: (item: FridgeItem) => void;
+  /** 재료를 다른 칸으로 끌어다 놓았을 때 */
+  onMove?: (item: FridgeItem, to: CompartmentSlot) => void;
 }) {
   const bySlot = useMemo(() => {
     const map = new Map<CompartmentSlot, FridgeItem[]>();
@@ -197,6 +291,45 @@ export function FridgeView({
   const [open, setOpen] = useState(loadDoor);
   const [zoom, setZoom] = useState<ZoomRequest | null>(null);
   const closeZoom = useCallback(() => setZoom(null), []);
+
+  // 드래그 (기획서 3.2절): 길게 누른 재료를 다른 칸에 놓으면 옮긴다.
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const dragRef = useRef<DragState | null>(null);
+  const dragApi = useMemo<DragApi>(
+    () => ({
+      drag,
+      start(item, from, x, y) {
+        const next = { item, from, x, y, over: slotAt(x, y) };
+        dragRef.current = next;
+        setDrag(next);
+      },
+      move(x, y) {
+        if (!dragRef.current) return;
+        const next = { ...dragRef.current, x, y, over: slotAt(x, y) };
+        dragRef.current = next;
+        setDrag(next);
+      },
+      end() {
+        const d = dragRef.current;
+        dragRef.current = null;
+        setDrag(null);
+        if (d?.over && d.over !== d.from) onMove?.(d.item, d.over);
+      },
+      cancel() {
+        dragRef.current = null;
+        setDrag(null);
+      },
+    }),
+    [drag, onMove],
+  );
+
+  // 드래그하는 동안에는 화면이 스크롤되지 않게 막는다.
+  useEffect(() => {
+    if (!drag) return;
+    const block = (e: TouchEvent) => e.preventDefault();
+    document.addEventListener("touchmove", block, { passive: false });
+    return () => document.removeEventListener("touchmove", block);
+  }, [drag]);
   const summary = urgencySummary(items, todayIso());
   const freezerCount = at("freezer_upper").length + at("freezer_lower").length;
 
@@ -233,132 +366,159 @@ export function FridgeView({
 
   return (
     <ZoomContext value={setZoom}>
-      <span id="zoom-hint" className="sr-only">
-        누르면 이 칸을 크게 봐요
-      </span>
-      {/* isolate: 3D 원근 효과가 고정된 탭바·버튼 위로 올라오지 않도록 냉장고를 자체 쌓임 맥락에 가둔다. */}
-      <div className="relative isolate z-0 flex flex-col gap-3 sm:flex-row">
-        <div
-          ref={cabinetRef}
-          aria-label="냉장고"
-          role="group"
-          className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 [perspective:1400px] dark:border-neutral-700 dark:bg-neutral-900"
-        >
-          {/* 냉장실 */}
+      <DragContext value={dragApi}>
+        <span id="drag-hint" className="sr-only">
+          길게 눌러 다른 칸으로 옮길 수 있어요. 재료 시트에서 보관 방식을 바꿔도 돼요.
+        </span>
+        <span id="zoom-hint" className="sr-only">
+          누르면 이 칸을 크게 봐요
+        </span>
+        {/* isolate: 3D 원근 효과가 고정된 탭바·버튼 위로 올라오지 않도록 냉장고를 자체 쌓임 맥락에 가둔다. */}
+        <div className="relative isolate z-0 flex flex-col gap-3 sm:flex-row">
           <div
-            aria-label="냉장실"
+            ref={cabinetRef}
+            aria-label="냉장고"
             role="group"
-            className="relative flex flex-1 rounded-t-[1.25rem] bg-sky-50/70 dark:bg-sky-950/40"
+            className="flex min-h-[62dvh] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-neutral-300 bg-neutral-100 [perspective:1400px] dark:border-neutral-700 dark:bg-neutral-900"
           >
-            <div inert={!open} aria-hidden={!open} className={`flex flex-1 ${interior}`}>
-              <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
+            {/* 냉장실 */}
+            <div
+              aria-label="냉장실"
+              role="group"
+              className="relative flex flex-1 rounded-t-[1.25rem] bg-sky-50/70 dark:bg-sky-950/40"
+            >
+              <div inert={!open} aria-hidden={!open} className={`flex flex-1 ${interior}`}>
+                <div className="flex flex-1 flex-col divide-y-2 divide-sky-200 dark:divide-sky-900">
+                  <Compartment
+                    slot="fridge_top"
+                    items={at("fridge_top")}
+                    onSelect={onSelect}
+                    className="flex-1"
+                  />
+                  <Compartment
+                    slot="fridge_middle"
+                    items={at("fridge_middle")}
+                    onSelect={onSelect}
+                    className="flex-1"
+                  />
+                  <Compartment
+                    slot="fridge_bottom"
+                    items={at("fridge_bottom")}
+                    onSelect={onSelect}
+                    className="flex-1"
+                  />
+                  <Compartment
+                    slot="veg_drawer"
+                    items={at("veg_drawer")}
+                    onSelect={onSelect}
+                    className="m-1 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40"
+                  />
+                </div>
                 <Compartment
-                  slot="fridge_top"
-                  items={at("fridge_top")}
+                  slot="fridge_door"
+                  items={at("fridge_door")}
                   onSelect={onSelect}
-                  className="flex-1"
-                />
-                <Compartment
-                  slot="fridge_middle"
-                  items={at("fridge_middle")}
-                  onSelect={onSelect}
-                  className="flex-1"
-                />
-                <Compartment
-                  slot="fridge_bottom"
-                  items={at("fridge_bottom")}
-                  onSelect={onSelect}
-                  className="flex-1"
-                />
-                <Compartment
-                  slot="veg_drawer"
-                  items={at("veg_drawer")}
-                  onSelect={onSelect}
-                  className="m-1 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40"
+                  className="w-24 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
                 />
               </div>
-              <Compartment
-                slot="fridge_door"
-                items={at("fridge_door")}
-                onSelect={onSelect}
-                className="w-24 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
-              />
-            </div>
-            <Door
-              open={open}
-              onOpen={openDoor}
-              label="냉장실 문 열기"
-              className="rounded-t-[1.25rem]"
-            >
-              <span className="flex flex-col items-start gap-2">
-                {summary.today > 0 && (
-                  <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white shadow">
-                    오늘까지 {summary.today}
-                  </span>
-                )}
-                {summary.soon > 0 && (
-                  <span className="rounded-full bg-amber-400 px-3 py-1 text-sm font-bold text-amber-950 shadow">
-                    3일 안에 {summary.soon}
-                  </span>
-                )}
-                {summary.expired > 0 && (
-                  <span className="rounded-full bg-neutral-500 px-3 py-1 text-sm font-bold text-white shadow">
-                    기한 지남 {summary.expired}
-                  </span>
-                )}
-              </span>
-            </Door>
-          </div>
-
-          {/* 냉장실·냉동실 경계 */}
-          <div aria-hidden className="h-2 bg-neutral-300 dark:bg-neutral-700" />
-
-          {/* 냉동실 */}
-          <div
-            aria-label="냉동실"
-            role="group"
-            className="relative rounded-b-[1.25rem] bg-indigo-50/70 dark:bg-indigo-950/40"
-          >
-            <div
-              inert={!open}
-              aria-hidden={!open}
-              className={`flex flex-col gap-1 p-1 ${interior}`}
-            >
-              <FreezerDrawer slot="freezer_upper" items={at("freezer_upper")} onSelect={onSelect} />
-              <FreezerDrawer slot="freezer_lower" items={at("freezer_lower")} onSelect={onSelect} />
-            </div>
-            <Door
-              open={open}
-              onOpen={openDoor}
-              label="냉동실 문 열기"
-              className="rounded-b-[1.25rem]"
-            >
-              {freezerCount > 0 && (
-                <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-sky-800 shadow">
-                  ❄ 냉동 {freezerCount}개
+              <Door
+                open={open}
+                onOpen={openDoor}
+                label="냉장실 문 열기"
+                className="rounded-t-[1.25rem]"
+              >
+                <span className="flex flex-col items-start gap-2">
+                  {summary.today > 0 && (
+                    <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white shadow">
+                      오늘까지 {summary.today}
+                    </span>
+                  )}
+                  {summary.soon > 0 && (
+                    <span className="rounded-full bg-amber-400 px-3 py-1 text-sm font-bold text-amber-950 shadow">
+                      3일 안에 {summary.soon}
+                    </span>
+                  )}
+                  {summary.expired > 0 && (
+                    <span className="rounded-full bg-neutral-500 px-3 py-1 text-sm font-bold text-white shadow">
+                      기한 지남 {summary.expired}
+                    </span>
+                  )}
                 </span>
-              )}
-            </Door>
+              </Door>
+            </div>
+
+            {/* 냉장실·냉동실 경계 */}
+            <div aria-hidden className="h-2 bg-neutral-300 dark:bg-neutral-700" />
+
+            {/* 냉동실 */}
+            <div
+              aria-label="냉동실"
+              role="group"
+              className="relative rounded-b-[1.25rem] bg-indigo-50/70 dark:bg-indigo-950/40"
+            >
+              <div
+                inert={!open}
+                aria-hidden={!open}
+                className={`flex flex-col gap-1 p-1 ${interior}`}
+              >
+                <FreezerDrawer
+                  slot="freezer_upper"
+                  items={at("freezer_upper")}
+                  onSelect={onSelect}
+                />
+                <FreezerDrawer
+                  slot="freezer_lower"
+                  items={at("freezer_lower")}
+                  onSelect={onSelect}
+                />
+              </div>
+              <Door
+                open={open}
+                onOpen={openDoor}
+                label="냉동실 문 열기"
+                className="rounded-b-[1.25rem]"
+              >
+                {freezerCount > 0 && (
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-sky-800 shadow">
+                    ❄ 냉동 {freezerCount}개
+                  </span>
+                )}
+              </Door>
+            </div>
+          </div>
+
+          {/* 팬트리: 문이 없는 선반 */}
+          <div
+            aria-label="팬트리"
+            role="group"
+            className="rounded-3xl border-4 border-amber-200 bg-amber-50/60 sm:w-40 dark:border-amber-900 dark:bg-amber-950/30"
+          >
+            <Compartment slot="pantry" items={at("pantry")} onSelect={onSelect} />
           </div>
         </div>
-
-        {/* 팬트리: 문이 없는 선반 */}
-        <div
-          aria-label="팬트리"
-          role="group"
-          className="rounded-3xl border-4 border-amber-200 bg-amber-50/60 sm:w-40 dark:border-amber-900 dark:bg-amber-950/30"
-        >
-          <Compartment slot="pantry" items={at("pantry")} onSelect={onSelect} />
-        </div>
-      </div>
-      {zoom && (
-        <CompartmentZoom
-          request={zoom}
-          items={at(zoom.slot)}
-          onClose={closeZoom}
-          renderItem={(item) => <ItemToken key={item.id} item={item} onSelect={onSelect} />}
-        />
-      )}
+        {zoom && (
+          <CompartmentZoom
+            request={zoom}
+            items={at(zoom.slot)}
+            onClose={closeZoom}
+            renderItem={(item) => (
+              <ItemToken key={item.id} item={item} slot={zoom.slot} onSelect={onSelect} />
+            )}
+          />
+        )}
+        {drag && (
+          <div
+            aria-hidden
+            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white px-3 py-2 text-sm font-semibold shadow-2xl ring-2 ring-emerald-500 dark:bg-neutral-800"
+            style={{ left: drag.x, top: drag.y }}
+          >
+            {itemDisplayName(drag.item, lookup)}
+            {drag.over && drag.over !== drag.from && (
+              <span className="ml-2 text-xs text-emerald-700">→ {SLOT_LABEL[drag.over]}</span>
+            )}
+          </div>
+        )}
+      </DragContext>
     </ZoomContext>
   );
 }

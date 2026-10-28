@@ -13,6 +13,7 @@ import {
   type DragApi,
   type DragState,
 } from "./drag";
+import { ingredientIcon } from "@/data/ingredient-icons";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type CompartmentSlot, type FridgeItem } from "@/lib/domain/fridge";
@@ -120,7 +121,7 @@ function ItemToken({
       aria-describedby="drag-hint"
       data-item-id={item.id}
       data-popping={popping || undefined}
-      className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
+      className={`flex min-h-11 max-w-full flex-col items-center justify-center overflow-hidden rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
         popping ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none" : ""
       } ${dragging ? "opacity-40" : ""}`}
     >
@@ -129,6 +130,7 @@ function ItemToken({
         unit={item.unit}
         reference={fillReference(item.quantity, ingredient?.usePerRecipe)}
         category={ingredient?.category ?? null}
+        icon={ingredientIcon(item.ingredientId, ingredient?.category)}
       />
       <span className="max-w-20 truncate font-semibold">{name}</span>
       <span className="text-[10px] text-neutral-500">
@@ -419,7 +421,7 @@ export function FridgeView({
                   slot="fridge_door"
                   items={at("fridge_door")}
                   onSelect={onSelect}
-                  className="w-24 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
+                  className="w-28 shrink-0 border-l-4 border-neutral-300 bg-white/60 dark:border-neutral-700 dark:bg-neutral-800/60"
                 />
               </div>
               <Door

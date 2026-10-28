@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { ingredientIcon } from "@/data/ingredient-icons";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, todayIso } from "@/lib/domain/expiry";
 import { itemDisplayName, type FridgeItem, type ItemPatch } from "@/lib/domain/fridge";
@@ -121,6 +122,7 @@ export function ItemDetailSheet({
               unit={item.unit}
               reference={glyphReference}
               category={ingredient?.category ?? null}
+              icon={ingredientIcon(item.ingredientId, ingredient?.category)}
               size="lg"
             />
           </span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ingredientIcon } from "@/data/ingredient-icons";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { dDayLabel, daysLeft, freshness, todayIso, type Freshness } from "@/lib/domain/expiry";
 import { itemDisplayName, type FridgeItem } from "@/lib/domain/fridge";
@@ -61,6 +62,9 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
         data-item-id={item.id}
         className="flex min-h-14 w-full items-center gap-3 px-1 text-left"
       >
+        <span aria-hidden className="text-xl">
+          {ingredientIcon(item.ingredientId, lookup(item.ingredientId ?? "")?.category)}
+        </span>
         <span className="flex-1">
           <span className={`font-medium ${level === "expired" ? "text-neutral-400" : ""}`}>
             {name}

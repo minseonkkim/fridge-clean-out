@@ -86,7 +86,7 @@ export function QuantityGlyph({
       )}
       {v.overflow !== null && (
         <span
-          className={`font-bold text-neutral-600 ${size === "lg" ? "text-base" : "text-[10px]"}`}
+          className={`font-bold text-neutral-600 ${size === "lg" ? "text-base" : "text-[10px]"} dark:text-neutral-300`}
         >
           ×{v.overflow}
         </span>

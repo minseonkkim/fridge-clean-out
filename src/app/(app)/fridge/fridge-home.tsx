@@ -149,11 +149,15 @@ export function FridgeHome() {
         <header className="flex items-baseline justify-between">
           <h1 className="text-xl font-bold">내 냉장고</h1>
           {mode === "trial" && (
-            <span className="text-xs text-neutral-500">체험 모드 · 이 기기에만 저장</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              체험 모드 · 이 기기에만 저장
+            </span>
           )}
         </header>
 
-        {status === "loading" && !snapshot && <p className="text-neutral-500">냉장고를 여는 중…</p>}
+        {status === "loading" && !snapshot && (
+          <p className="text-neutral-500 dark:text-neutral-400">냉장고를 여는 중…</p>
+        )}
         {status === "error" && (
           <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
             {error}
@@ -175,7 +179,7 @@ export function FridgeHome() {
                     끼니 수, 못 먹는 재료, 조리도구, 지금 있는 재료
                   </span>
                 </span>
-                <span aria-hidden className="text-xl text-emerald-700">
+                <span aria-hidden className="text-xl text-emerald-700 dark:text-emerald-400">
                   ›
                 </span>
               </Link>
@@ -187,7 +191,9 @@ export function FridgeHome() {
             />
             <div className="flex items-center justify-between gap-2">
               <UrgencyBadges items={snapshot.items} />
-              <p className="shrink-0 text-sm text-neutral-500">재료 {snapshot.items.length}개</p>
+              <p className="shrink-0 text-sm text-neutral-500 dark:text-neutral-400">
+                재료 {snapshot.items.length}개
+              </p>
             </div>
             <Segmented
               label="보기"
@@ -217,7 +223,7 @@ export function FridgeHome() {
                   <button
                     type="button"
                     onClick={clearCookHash}
-                    className="min-h-11 px-2 text-neutral-500"
+                    className="min-h-11 px-2 text-neutral-500 dark:text-neutral-400"
                   >
                     해제
                   </button>
@@ -227,7 +233,7 @@ export function FridgeHome() {
             {view === "fridge" ? (
               <>
                 {snapshot.items.length === 0 && (
-                  <p className="text-center text-sm text-neutral-500">
+                  <p className="text-center text-sm text-neutral-500 dark:text-neutral-400">
                     냉장고가 비어 있어요. 오른쪽 아래 + 버튼으로 재료를 넣어 보세요.
                   </p>
                 )}
@@ -269,7 +275,7 @@ export function FridgeHome() {
         type="button"
         onClick={() => setAdding(true)}
         aria-label="재료 추가"
-        className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] grid size-14 place-items-center rounded-full bg-emerald-600 text-3xl text-white shadow-lg"
+        className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] grid size-14 place-items-center rounded-full bg-emerald-700 text-3xl text-white shadow-lg"
       >
         +
       </button>

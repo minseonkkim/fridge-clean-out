@@ -121,7 +121,7 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
             type="button"
             onClick={submit}
             disabled={saving}
-            className="min-h-12 flex-1 rounded-xl bg-emerald-600 font-semibold text-white disabled:opacity-50"
+            className="min-h-12 flex-1 rounded-xl bg-emerald-700 font-semibold text-white disabled:opacity-50"
           >
             {saving
               ? "넣는 중…"
@@ -221,13 +221,15 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
                         {matchedAlias ? (
                           <>
                             {matchedAlias}{" "}
-                            <span className="text-neutral-400">→ {ingredient.name}</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">
+                              → {ingredient.name}
+                            </span>
                           </>
                         ) : (
                           ingredient.name
                         )}
                       </span>
-                      <span className="text-xs text-neutral-400">
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
                         {CATEGORY_LABEL[ingredient.category]}
                       </span>
                     </button>
@@ -236,7 +238,7 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
               </ul>
             )}
             {state.query.trim() && !state.ingredient && (
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 사전에 없는 재료로 등록돼요. 기한은 기본값으로 정해요.
               </p>
             )}
@@ -311,7 +313,10 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor={ids.exp} className="text-sm font-semibold">
-                기한 <span className="font-normal text-neutral-500">({dDayLabel(left)})</span>
+                기한{" "}
+                <span className="font-normal text-neutral-500 dark:text-neutral-400">
+                  ({dDayLabel(left)})
+                </span>
               </label>
               <input
                 id={ids.exp}
@@ -325,7 +330,7 @@ export function AddItemSheet({ open, onClose }: { open: boolean; onClose: () => 
               />
             </div>
           </div>
-          <p className="-mt-3 text-xs text-neutral-500">
+          <p className="-mt-3 text-xs text-neutral-500 dark:text-neutral-400">
             {state.expiresManual ? (
               <>
                 직접 정한 기한이에요.{" "}
@@ -396,7 +401,7 @@ function BulkPanel({
                   <span className="ml-1 text-xs text-amber-700">(사전에 없음)</span>
                 )}
               </span>
-              <span className="text-neutral-500">
+              <span className="text-neutral-500 dark:text-neutral-400">
                 {entry.quantity}
                 {UNIT_LABEL[entry.unit]} · {STORAGE_LABEL[inputs[i].storage]} ·{" "}
                 {dDayLabel(diffDays(today, inputs[i].expiresAt))}
@@ -405,7 +410,7 @@ function BulkPanel({
           ))}
         </ul>
       )}
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
         오늘 산 것으로 보고 기본 보관 방식과 권장 기한으로 넣어요. 넣은 뒤에 하나씩 고칠 수 있어요.
       </p>
       {error && (

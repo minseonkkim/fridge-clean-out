@@ -109,7 +109,7 @@ export function BottomSheet({ open, onClose, title, children, footer }: BottomSh
         <button
           type="button"
           onClick={onClose}
-          className="-mr-2 grid size-11 place-items-center rounded-full text-2xl text-neutral-500"
+          className="-mr-2 grid size-11 place-items-center rounded-full text-2xl text-neutral-500 dark:text-neutral-400"
           aria-label="닫기"
         >
           ×

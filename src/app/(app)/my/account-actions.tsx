@@ -49,12 +49,13 @@ export function AccountActions() {
     }
   }
 
-  if (session === undefined) return <p className="text-neutral-500">불러오는 중…</p>;
+  if (session === undefined)
+    return <p className="text-neutral-500 dark:text-neutral-400">불러오는 중…</p>;
 
   if (session === null) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-neutral-600">
+        <p className="text-neutral-600 dark:text-neutral-300">
           로그인하지 않은 체험 모드입니다. 데이터는 이 기기에만 저장돼요.
         </p>
         <Link
@@ -71,7 +72,9 @@ export function AccountActions() {
     <div className="flex flex-col gap-4">
       <p>
         <span className="font-semibold">{session.nickname ?? "사용자"}</span>
-        {session.email && <span className="ml-2 text-neutral-500">{session.email}</span>}
+        {session.email && (
+          <span className="ml-2 text-neutral-500 dark:text-neutral-400">{session.email}</span>
+        )}
       </p>
 
       <button
@@ -111,7 +114,7 @@ export function AccountActions() {
         <button
           type="button"
           onClick={() => setConfirmDelete(true)}
-          className="min-h-11 self-start text-sm text-neutral-500 underline underline-offset-4"
+          className="min-h-11 self-start text-sm text-neutral-500 underline underline-offset-4 dark:text-neutral-400"
         >
           회원 탈퇴
         </button>

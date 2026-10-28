@@ -45,7 +45,10 @@ export function RecentPurchases({ onAdded }: { onAdded: (label: string) => void 
   return (
     <section aria-labelledby="recent-heading" className="flex flex-col gap-2">
       <h3 id="recent-heading" className="text-sm font-semibold">
-        최근 산 재료 <span className="font-normal text-neutral-500">· 누르면 바로 넣어요</span>
+        최근 산 재료{" "}
+        <span className="font-normal text-neutral-500 dark:text-neutral-400">
+          · 누르면 바로 넣어요
+        </span>
       </h3>
       <ul className="flex flex-wrap gap-2">
         {recent.map((r) => {

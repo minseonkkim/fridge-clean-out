@@ -158,7 +158,7 @@ export function CookButton({
         type="button"
         onClick={open}
         disabled={!canCook}
-        className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-30 mx-auto min-h-14 max-w-md rounded-2xl bg-emerald-600 text-lg font-bold text-white shadow-lg disabled:bg-neutral-300 disabled:text-neutral-500"
+        className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-30 mx-auto min-h-14 max-w-md rounded-2xl bg-emerald-700 text-lg font-bold text-white shadow-lg disabled:bg-neutral-300 disabled:text-neutral-500"
       >
         {canCook ? "요리 완료" : "재료가 모자라요"}
       </button>
@@ -175,7 +175,7 @@ export function CookButton({
               type="button"
               onClick={confirm}
               disabled={busy}
-              className="min-h-12 w-full rounded-xl bg-emerald-600 font-semibold text-white disabled:opacity-50"
+              className="min-h-12 w-full rounded-xl bg-emerald-700 font-semibold text-white disabled:opacity-50"
             >
               {busy ? "처리 중…" : `${recipe.name} 완료`}
             </button>
@@ -197,7 +197,9 @@ export function CookButton({
             ))}
           </ul>
           {preview.lines.length === 0 && (
-            <p className="text-neutral-500">냉장고에서 뺄 재료가 없어요 (기본 양념만 써요).</p>
+            <p className="text-neutral-500 dark:text-neutral-400">
+              냉장고에서 뺄 재료가 없어요 (기본 양념만 써요).
+            </p>
           )}
           {error && (
             <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">

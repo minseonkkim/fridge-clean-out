@@ -33,7 +33,7 @@ export default function Landing() {
       <div className="flex flex-col gap-3">
         <Link
           href="/fridge"
-          className="flex min-h-14 items-center justify-center rounded-2xl bg-emerald-600 text-lg font-bold text-white"
+          className="flex min-h-14 items-center justify-center rounded-2xl bg-emerald-700 text-lg font-bold text-white"
         >
           로그인 없이 시작
         </Link>

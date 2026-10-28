@@ -15,14 +15,14 @@ const nameOf = (id: string) => INGREDIENT_BY_ID.get(id)?.name ?? id;
 /** 마이: 식습관 설정과 기본 양념 켜고 끄기 (기획서 4장, 5.1절). 바꾸면 바로 저장한다. */
 export function PreferencesSection() {
   const { snapshot, savePreferences } = useFridge();
-  if (!snapshot) return <p className="text-neutral-500">불러오는 중…</p>;
+  if (!snapshot) return <p className="text-neutral-500 dark:text-neutral-400">불러오는 중…</p>;
   const prefs = snapshot.preferences;
   const save = (patch: Partial<Preferences>) => void savePreferences(patch);
 
   return (
     <>
       <section aria-labelledby="diet-heading" className="flex flex-col gap-4">
-        <h2 id="diet-heading" className="font-semibold text-neutral-500">
+        <h2 id="diet-heading" className="font-semibold text-neutral-500 dark:text-neutral-400">
           식습관
         </h2>
 
@@ -83,7 +83,7 @@ export function PreferencesSection() {
         <div className="flex flex-col gap-2">
           <span>못 먹는 재료</span>
           {prefs.excludedIngredientIds.length === 0 ? (
-            <p className="text-sm text-neutral-500">없어요.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">없어요.</p>
           ) : (
             <ul aria-label="못 먹는 재료" className="flex flex-wrap gap-2">
               {prefs.excludedIngredientIds.map((id) => (
@@ -106,7 +106,7 @@ export function PreferencesSection() {
           )}
           <Link
             href="/onboarding"
-            className="min-h-11 content-center self-start text-sm text-emerald-700 underline underline-offset-4"
+            className="min-h-11 content-center self-start text-sm text-emerald-700 underline underline-offset-4 dark:text-emerald-400"
           >
             처음 설정 다시 하기
           </Link>
@@ -114,10 +114,10 @@ export function PreferencesSection() {
       </section>
 
       <section aria-labelledby="pantry-heading" className="flex flex-col gap-2">
-        <h2 id="pantry-heading" className="font-semibold text-neutral-500">
+        <h2 id="pantry-heading" className="font-semibold text-neutral-500 dark:text-neutral-400">
           기본 양념
         </h2>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           켜 둔 양념은 늘 있다고 보고 추천해요. 없는 양념은 꺼 주세요.
         </p>
         <div className="flex flex-wrap gap-2">

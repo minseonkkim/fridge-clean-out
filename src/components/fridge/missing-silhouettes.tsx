@@ -59,7 +59,9 @@ export function MissingSilhouettes({
 
   return (
     <section aria-label="모자란 재료" className="flex flex-col gap-2">
-      <p className="text-sm text-neutral-500">모자란 재료예요. 누르면 장보기 목록에 담아요.</p>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        모자란 재료예요. 누르면 장보기 목록에 담아요.
+      </p>
       <ul className="flex flex-wrap gap-2">
         {missing.map((m) => {
           const done = added.has(m.ingredientId);
@@ -70,7 +72,7 @@ export function MissingSilhouettes({
                 onClick={() => add(m)}
                 disabled={done}
                 data-silhouette
-                className="flex min-h-16 min-w-20 flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-400 px-2 py-1 text-xs text-neutral-500 disabled:border-emerald-500 disabled:text-emerald-700 dark:border-neutral-600"
+                className="flex min-h-16 min-w-20 flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-400 px-2 py-1 text-xs text-neutral-500 disabled:border-emerald-500 disabled:text-emerald-700 dark:border-neutral-600 dark:text-neutral-400"
               >
                 <span aria-hidden className={`text-2xl ${done ? "" : "opacity-30 grayscale"}`}>
                   {ingredientIcon(m.ingredientId, baseLookup(m.ingredientId)?.category)}

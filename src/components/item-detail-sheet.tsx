@@ -101,7 +101,7 @@ export function ItemDetailSheet({
           type="button"
           onClick={save}
           disabled={saving}
-          className="min-h-12 w-full rounded-xl bg-emerald-600 font-semibold text-white disabled:opacity-50"
+          className="min-h-12 w-full rounded-xl bg-emerald-700 font-semibold text-white disabled:opacity-50"
         >
           {saving ? "저장 중…" : dirty ? "저장" : "닫기"}
         </button>
@@ -110,7 +110,7 @@ export function ItemDetailSheet({
       <div className="flex flex-col gap-6">
         <p className="flex items-baseline gap-3">
           <span className="text-3xl font-bold">{dDayLabel(left)}</span>
-          <span className="text-sm text-neutral-500">
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">
             {expiresAt}까지 · {SLOT_LABEL[slot]}
           </span>
         </p>

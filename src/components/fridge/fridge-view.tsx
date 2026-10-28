@@ -34,7 +34,8 @@ const TONE: Record<Freshness, string> = {
   fresh: "bg-white ring-neutral-200 dark:bg-neutral-800 dark:ring-neutral-700",
   soon: "bg-amber-50 ring-amber-400 dark:bg-amber-950",
   urgent: "bg-red-50 ring-red-500 dark:bg-red-950",
-  expired: "bg-neutral-200 ring-neutral-300 text-neutral-500 dark:bg-neutral-800",
+  expired:
+    "bg-neutral-200 ring-neutral-300 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400",
 };
 
 function ItemToken({
@@ -151,7 +152,7 @@ function ItemToken({
         icon={ingredientIcon(item.ingredientId, ingredient?.category)}
       />
       <span className="max-w-20 truncate font-semibold">{name}</span>
-      <span className="text-[10px] text-neutral-500">
+      <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
         {qty} · {dDayLabel(left)}
       </span>
       {item.storage === "freezer" && (
@@ -205,7 +206,7 @@ function Compartment({
       // 화면 밖 칸은 브라우저가 그리기를 건너뛴다 (재료가 많을 때 스크롤·애니메이션 비용 절감)
       className={`flex min-h-16 flex-col gap-1 p-2 transition-colors [contain-intrinsic-size:auto_4rem] [content-visibility:auto] ${className} ${dropClass(slot, drag)}`}
     >
-      <h3 id={id} className="text-[11px] font-semibold text-neutral-400">
+      <h3 id={id} className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
         {zoom ? (
           <button
             type="button"
@@ -268,7 +269,7 @@ function FreezerDrawer({
       >
         <span aria-hidden className="h-1.5 w-12 rounded-full bg-neutral-300 dark:bg-neutral-600" />
         <span className="flex-1">
-          <h3 id={id} className="text-[11px] font-semibold text-neutral-400">
+          <h3 id={id} className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
             {SLOT_LABEL[slot]}
           </h3>
           <span className="text-xs text-neutral-600 dark:text-neutral-300">
@@ -288,7 +289,9 @@ function FreezerDrawer({
             className="origin-top [transform:rotateX(18deg)] animate-[drawer-open_300ms_ease-out_both] rounded-b-xl bg-indigo-50 p-2 motion-reduce:[transform:none] motion-reduce:animate-[fade-in_200ms_ease-out_both] dark:bg-indigo-950/60"
           >
             {items.length === 0 ? (
-              <p className="py-2 text-center text-xs text-neutral-500">서랍이 비어 있어요</p>
+              <p className="py-2 text-center text-xs text-neutral-500 dark:text-neutral-400">
+                서랍이 비어 있어요
+              </p>
             ) : (
               <div className="grid grid-cols-3 gap-1.5">
                 {items.map((item) => (
@@ -597,7 +600,9 @@ export function FridgeView({
             >
               {itemDisplayName(drag.item, lookup)}
               {drag.over && drag.over !== drag.from && (
-                <span className="ml-2 text-xs text-emerald-700">→ {SLOT_LABEL[drag.over]}</span>
+                <span className="ml-2 text-xs text-emerald-700 dark:text-emerald-400">
+                  → {SLOT_LABEL[drag.over]}
+                </span>
               )}
             </div>
           )}

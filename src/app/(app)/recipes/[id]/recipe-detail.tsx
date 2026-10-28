@@ -24,12 +24,15 @@ export function RecipeDetail({ recipeId }: { recipeId: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-4 pb-28">
-      <Link href="/plan" className="min-h-11 self-start py-2 text-sm text-neutral-500">
+      <Link
+        href="/plan"
+        className="min-h-11 self-start py-2 text-sm text-neutral-500 dark:text-neutral-400"
+      >
         ← 식단으로
       </Link>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">{recipe.name}</h1>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           {recipe.minutes}분 · {DIFFICULTY[recipe.difficulty]}
           {recipe.tools.length > 0 &&
             ` · ${recipe.tools.map((t) => TOOL_LABEL[t]).join(", ")} 필요`}
@@ -52,20 +55,23 @@ export function RecipeDetail({ recipeId }: { recipeId: string }) {
             servings={servings}
           />
         ) : (
-          <p className="text-neutral-500">냉장고를 확인하는 중…</p>
+          <p className="text-neutral-500 dark:text-neutral-400">냉장고를 확인하는 중…</p>
         )}
       </section>
 
       <section aria-labelledby="steps-heading" className="flex flex-col gap-2">
         <h2 id="steps-heading" className="font-semibold">
-          만드는 법 <span className="font-normal text-neutral-500">· 약 {recipe.minutes}분</span>
+          만드는 법{" "}
+          <span className="font-normal text-neutral-500 dark:text-neutral-400">
+            · 약 {recipe.minutes}분
+          </span>
         </h2>
         <ol className="flex flex-col gap-3">
           {recipe.steps.map((step, i) => (
             <li key={i} className="flex gap-3">
               <span
                 aria-hidden
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-emerald-600 text-sm font-bold text-white"
+                className="grid size-7 shrink-0 place-items-center rounded-full bg-emerald-700 text-sm font-bold text-white"
               >
                 {i + 1}
               </span>
@@ -133,7 +139,9 @@ function IngredientList({
       </ul>
       {optional.length > 0 && (
         <>
-          <h3 className="mt-2 text-sm font-semibold text-neutral-500">있으면 좋은 재료</h3>
+          <h3 className="mt-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            있으면 좋은 재료
+          </h3>
           <ul
             aria-label="선택 재료"
             className="divide-y divide-neutral-100 dark:divide-neutral-800"
@@ -150,7 +158,7 @@ function IngredientList({
 
 const STATUS_MARK = {
   have: { icon: "✓", label: "있음", style: "text-emerald-700 dark:text-emerald-300" },
-  staple: { icon: "·", label: "기본 양념", style: "text-neutral-400" },
+  staple: { icon: "·", label: "기본 양념", style: "text-neutral-500 dark:text-neutral-400" },
   missing: { icon: "✕", label: "없음", style: "text-red-600 dark:text-red-400" },
 } as const;
 
@@ -172,7 +180,7 @@ function GroupRow({ group }: { group: IngredientGroupView }) {
           {group.short && <span className="ml-1 text-xs text-amber-700">(양이 조금 모자라요)</span>}
         </span>
         {group.items.length > 0 && (
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             냉장고:{" "}
             {group.items
               .map(

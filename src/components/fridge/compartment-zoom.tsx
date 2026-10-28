@@ -128,13 +128,15 @@ export function CompartmentZoom({
           </button>
         </div>
         {items.length === 0 ? (
-          <p className="py-8 text-center text-neutral-500">이 칸은 비어 있어요.</p>
+          <p className="py-8 text-center text-neutral-500 dark:text-neutral-400">
+            이 칸은 비어 있어요.
+          </p>
         ) : (
           <div className="grid grid-cols-3 gap-3 [&_button]:min-h-20 [&_button]:text-sm">
             {items.map((item) => renderItem(item))}
           </div>
         )}
-        <p className="mt-auto text-center text-xs text-neutral-400">
+        <p className="mt-auto text-center text-xs text-neutral-500 dark:text-neutral-400">
           두 손가락으로 오므리거나 뒤로 가면 돌아가요
         </p>
       </div>

@@ -8,7 +8,7 @@ export default function MyPage() {
     <main className="mx-auto flex w-full max-w-md flex-col gap-8 px-4 pt-6 pb-28">
       <h1 className="text-xl font-bold">마이</h1>
       <section aria-labelledby="account-heading" className="flex flex-col gap-3">
-        <h2 id="account-heading" className="font-semibold text-neutral-500">
+        <h2 id="account-heading" className="font-semibold text-neutral-500 dark:text-neutral-400">
           계정
         </h2>
         <AccountActions />

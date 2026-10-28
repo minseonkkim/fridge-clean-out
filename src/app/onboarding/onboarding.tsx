@@ -92,7 +92,7 @@ export function Onboarding() {
   }
 
   if (!snapshot) {
-    return <p className="p-6 text-neutral-500">불러오는 중…</p>;
+    return <p className="p-6 text-neutral-500 dark:text-neutral-400">불러오는 중…</p>;
   }
 
   const last = step === STEPS.length - 1;
@@ -100,14 +100,14 @@ export function Onboarding() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-6 pt-8 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
       <header className="flex items-center justify-between">
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           {step + 1} / {STEPS.length} · {STEPS[step]}
         </p>
         <button
           type="button"
           onClick={() => finish(true)}
           disabled={saving}
-          className="min-h-11 px-2 text-sm text-neutral-500 underline underline-offset-4"
+          className="min-h-11 px-2 text-sm text-neutral-500 underline underline-offset-4 dark:text-neutral-400"
         >
           건너뛰기
         </button>
@@ -160,7 +160,9 @@ export function Onboarding() {
         {step === 1 && (
           <>
             <h1 className="text-2xl font-bold">못 먹는 재료가 있나요?</h1>
-            <p className="text-sm text-neutral-500">고른 재료가 들어간 요리는 추천하지 않아요.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              고른 재료가 들어간 요리는 추천하지 않아요.
+            </p>
             <div className="flex flex-wrap gap-2">
               {[...new Set([...COMMON_EXCLUDES, ...excluded])].map((id) => (
                 <Chip
@@ -203,7 +205,9 @@ export function Onboarding() {
         {step === 2 && (
           <>
             <h1 className="text-2xl font-bold">가진 조리도구를 골라 주세요</h1>
-            <p className="text-sm text-neutral-500">가스레인지·냄비·프라이팬은 있다고 볼게요.</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              가스레인지·냄비·프라이팬은 있다고 볼게요.
+            </p>
             <div className="flex flex-wrap gap-2">
               {TOOLS.map((t) => (
                 <Chip
@@ -221,7 +225,7 @@ export function Onboarding() {
         {step === 3 && (
           <>
             <h1 className="text-2xl font-bold">지금 냉장고에 있는 걸 골라 주세요</h1>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
               자주 사는 재료예요. 오늘 산 것으로 넣고, 나중에 고칠 수 있어요.
             </p>
             <div className="flex flex-wrap gap-2">
@@ -259,7 +263,7 @@ export function Onboarding() {
           type="button"
           disabled={saving}
           onClick={() => (last ? finish() : setStep((s) => s + 1))}
-          className="min-h-12 flex-1 rounded-xl bg-emerald-600 font-semibold text-white disabled:opacity-50"
+          className="min-h-12 flex-1 rounded-xl bg-emerald-700 font-semibold text-white disabled:opacity-50"
         >
           {saving
             ? "저장 중…"

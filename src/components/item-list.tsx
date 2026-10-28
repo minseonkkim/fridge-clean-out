@@ -15,7 +15,7 @@ const BADGE_STYLE: Record<Freshness, string> = {
   fresh: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
   soon: "bg-amber-100 text-amber-900 ring-1 ring-amber-400 dark:bg-amber-950 dark:text-amber-200",
   urgent: "bg-red-100 text-red-800 ring-1 ring-red-500 dark:bg-red-950 dark:text-red-200",
-  expired: "bg-neutral-200 text-neutral-500 line-through dark:bg-neutral-800",
+  expired: "bg-neutral-200 text-neutral-500 line-through dark:bg-neutral-800 dark:text-neutral-400",
 };
 
 type View = "slot" | "urgent";
@@ -31,7 +31,11 @@ export function formatQuantity(item: Pick<FridgeItem, "quantity" | "unit">): str
 export function UrgencyBadges({ items }: { items: FridgeItem[] }) {
   const s = urgencySummary(items, todayIso());
   if (s.expired + s.today + s.soon === 0) {
-    return <p className="text-sm text-neutral-500">급하게 먹어야 할 재료가 없어요.</p>;
+    return (
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        급하게 먹어야 할 재료가 없어요.
+      </p>
+    );
   }
   return (
     <ul aria-label="급한 재료" className="flex flex-wrap gap-2 text-sm font-semibold">
@@ -42,7 +46,7 @@ export function UrgencyBadges({ items }: { items: FridgeItem[] }) {
         <li className={`rounded-full px-3 py-1 ${BADGE_STYLE.soon}`}>3일 안에 {s.soon}</li>
       )}
       {s.expired > 0 && (
-        <li className="rounded-full bg-neutral-200 px-3 py-1 text-neutral-600 dark:bg-neutral-800">
+        <li className="rounded-full bg-neutral-200 px-3 py-1 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
           기한 지남 {s.expired}
         </li>
       )}
@@ -67,10 +71,14 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
           {ingredientIcon(item.ingredientId, lookup(item.ingredientId ?? "")?.category)}
         </span>
         <span className="flex-1">
-          <span className={`font-medium ${level === "expired" ? "text-neutral-400" : ""}`}>
+          <span
+            className={`font-medium ${level === "expired" ? "text-neutral-500" : ""} dark:text-neutral-400`}
+          >
             {name}
           </span>
-          <span className="ml-2 text-sm text-neutral-500">{formatQuantity(item)}</span>
+          <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400">
+            {formatQuantity(item)}
+          </span>
           {item.storage === "freezer" && <span className="ml-1 text-xs text-sky-600">❄ 냉동</span>}
         </span>
         <span
@@ -97,7 +105,7 @@ export function ItemList({
 
   if (items.length === 0) {
     return (
-      <p className="rounded-xl bg-neutral-50 p-6 text-center text-neutral-500 dark:bg-neutral-900">
+      <p className="rounded-xl bg-neutral-50 p-6 text-center text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
         냉장고가 비어 있어요. 오른쪽 아래 + 버튼으로 재료를 넣어 보세요.
       </p>
     );
@@ -109,7 +117,10 @@ export function ItemList({
       {view === "slot" ? (
         sections.map((section) => (
           <section key={section.slot} aria-labelledby={`slot-${section.slot}`}>
-            <h2 id={`slot-${section.slot}`} className="mb-1 text-sm font-semibold text-neutral-500">
+            <h2
+              id={`slot-${section.slot}`}
+              className="mb-1 text-sm font-semibold text-neutral-500 dark:text-neutral-400"
+            >
               {section.label} <span className="font-normal">{section.items.length}</span>
             </h2>
             <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
@@ -129,7 +140,7 @@ export function ItemList({
           ))}
         </ul>
       )}
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
         기한은 권장값이에요. {STORAGE_LABEL.freezer} 재료는 ❄로 표시해요.
       </p>
     </div>

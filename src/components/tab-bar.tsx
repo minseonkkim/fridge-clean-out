@@ -35,7 +35,9 @@ export function TabBar() {
                 href={tab.href}
                 aria-current={current ? "page" : undefined}
                 className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-semibold ${
-                  current ? "text-emerald-700 dark:text-emerald-400" : "text-neutral-500"
+                  current
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : "text-neutral-600 dark:text-neutral-400"
                 }`}
               >
                 <span aria-hidden className="text-xl">

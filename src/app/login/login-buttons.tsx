@@ -37,7 +37,7 @@ export function LoginButtons({ next, enabled }: { next?: string; enabled: boolea
         </button>
       ))}
       {!enabled && (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           로그인 설정(Supabase 환경 변수)이 아직 없습니다. 로그인 없이 체험할 수 있어요.
         </p>
       )}

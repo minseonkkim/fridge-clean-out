@@ -10,7 +10,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">냉털 레시피</h1>
-        <p className="text-neutral-600">
+        <p className="text-neutral-600 dark:text-neutral-300">
           로그인하면 내 냉장고가 저장되고 다른 기기에서도 이어서 쓸 수 있어요.
         </p>
       </header>
@@ -19,7 +19,10 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
         <LoginArea searchParams={searchParams} />
       </Suspense>
 
-      <Link href="/fridge" className="min-h-11 content-center text-center text-neutral-600 underline underline-offset-4">
+      <Link
+        href="/fridge"
+        className="min-h-11 content-center text-center text-neutral-600 underline underline-offset-4 dark:text-neutral-300"
+      >
         로그인 없이 시작
       </Link>
     </main>

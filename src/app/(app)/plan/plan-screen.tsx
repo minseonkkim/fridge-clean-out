@@ -36,7 +36,9 @@ export function PlanScreen() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 pt-6 pb-28">
       <h1 className="text-xl font-bold">식단 플랜</h1>
-      {status === "loading" && !snapshot && <p className="text-neutral-500">계산하는 중…</p>}
+      {status === "loading" && !snapshot && (
+        <p className="text-neutral-500 dark:text-neutral-400">계산하는 중…</p>
+      )}
       {status === "error" && (
         <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
           {error}
@@ -114,7 +116,9 @@ export function PlanBody({ items }: { items: FridgeItem[] }) {
             <h2 className="mb-2 font-semibold">
               {dayLabel(day.date, today)}
               {day.day > 2 && (
-                <span className="ml-2 text-sm font-normal text-neutral-500">{day.day}일 뒤</span>
+                <span className="ml-2 text-sm font-normal text-neutral-500 dark:text-neutral-400">
+                  {day.day}일 뒤
+                </span>
               )}
             </h2>
             <ul className="flex flex-col gap-2">
@@ -130,7 +134,7 @@ export function PlanBody({ items }: { items: FridgeItem[] }) {
           </li>
         ))}
       </ol>
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
         재료를 넣거나 고치거나 요리를 마치면 플랜이 바로 다시 계산돼요.
       </p>
     </>
@@ -165,11 +169,15 @@ function MealRow({
         <span className="flex items-baseline justify-between gap-2">
           <span className="font-semibold">
             {showMealName && (
-              <span className="mr-2 text-xs text-neutral-500">{MEAL_NAME[meal.mealIndex]}</span>
+              <span className="mr-2 text-xs text-neutral-500 dark:text-neutral-400">
+                {MEAL_NAME[meal.mealIndex]}
+              </span>
             )}
             {recipe.name}
           </span>
-          <span className="shrink-0 text-xs text-neutral-500">{recipe.minutes}분</span>
+          <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
+            {recipe.minutes}분
+          </span>
         </span>
         <span className="flex flex-wrap gap-1 text-xs">
           {saves.map(({ item, left }) => (

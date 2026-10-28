@@ -40,7 +40,11 @@ export function AddMissingButton({
         {missing.map((m) => `${m.name} ${m.amount}${UNIT_LABEL[m.unit]}`).join(", ")})
       </button>
       {message && (
-        <p role="status" aria-label="장보기 담기 결과" className="text-sm text-emerald-700">
+        <p
+          role="status"
+          aria-label="장보기 담기 결과"
+          className="text-sm text-emerald-700 dark:text-emerald-400"
+        >
           {message}
         </p>
       )}

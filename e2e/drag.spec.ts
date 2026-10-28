@@ -33,6 +33,12 @@ async function longPressDrag(page: Page, from: string, toSlot: string) {
       const top = Math.max(b.y + 10, safeTop);
       const bottom = Math.min(b.y + b.height - 10, safeBottom);
       await page.mouse.move(b.x + b.width / 2, (top + bottom) / 2, { steps: 12 });
+      // 지나오는 동안 자동 스크롤로 칸이 움직였을 수 있으니 멈춘 뒤 다시 겨눈다
+      await page.waitForTimeout(100);
+      const c = (await target.boundingBox())!;
+      const cTop = Math.max(c.y + 10, safeTop);
+      const cBottom = Math.min(c.y + c.height - 10, safeBottom);
+      await page.mouse.move(c.x + c.width / 2, (cTop + cBottom) / 2, { steps: 2 });
       break;
     }
     await page.mouse.move(a.x + a.width / 2, y < safeTop + 1 ? 20 : height - 30, { steps: 4 });

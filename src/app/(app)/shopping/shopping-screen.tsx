@@ -31,7 +31,9 @@ export function ShoppingScreen() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pt-6 pb-28">
       <h1 className="text-xl font-bold">장보기</h1>
-      {status === "loading" && !snapshot && <p className="text-neutral-500">계산하는 중…</p>}
+      {status === "loading" && !snapshot && (
+        <p className="text-neutral-500 dark:text-neutral-400">계산하는 중…</p>
+      )}
       {status === "error" && (
         <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
           {error}
@@ -63,7 +65,7 @@ function ShoppingBody({ items }: { items: FridgeItem[] }) {
           딱 하나만 산다면
         </h2>
         {buyOne.length === 0 ? (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             하나만 사서 새로 만들 수 있는 요리가 없어요. 냉장고에 재료를 더 넣어 보세요.
           </p>
         ) : (
@@ -73,7 +75,9 @@ function ShoppingBody({ items }: { items: FridgeItem[] }) {
                 key={option.ingredientId}
                 className="flex items-start gap-3 rounded-2xl border border-neutral-200 p-3 dark:border-neutral-800"
               >
-                <span className="text-lg font-bold text-emerald-700">{rank + 1}</span>
+                <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                  {rank + 1}
+                </span>
                 <div className="flex flex-1 flex-col gap-1">
                   <p className="font-semibold">{nameOf(option.ingredientId)}</p>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -101,7 +105,7 @@ function ShoppingBody({ items }: { items: FridgeItem[] }) {
                       },
                     ])
                   }
-                  className="min-h-11 shrink-0 rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white"
+                  className="min-h-11 shrink-0 rounded-full bg-emerald-700 px-4 text-sm font-semibold text-white"
                 >
                   담기
                 </button>

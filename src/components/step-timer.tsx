@@ -54,7 +54,7 @@ export function StepTimer({ seconds }: { seconds: number }) {
           done
             ? "bg-red-600 text-white"
             : running
-              ? "bg-emerald-600 text-white"
+              ? "bg-emerald-700 text-white"
               : "bg-neutral-100 dark:bg-neutral-800"
         }`}
       >
@@ -64,7 +64,7 @@ export function StepTimer({ seconds }: { seconds: number }) {
         <button
           type="button"
           onClick={() => setLeft(seconds)}
-          className="min-h-11 px-2 text-xs text-neutral-500 underline underline-offset-2"
+          className="min-h-11 px-2 text-xs text-neutral-500 underline underline-offset-2 dark:text-neutral-400"
         >
           처음부터
         </button>

@@ -46,7 +46,7 @@ export function FridgeDemo() {
 
       {/* 문: 경첩(왼쪽)을 축으로 열린다 */}
       <div
-        className={`absolute inset-0 flex origin-left flex-col items-end justify-center rounded-3xl bg-emerald-600 p-4 shadow-xl transition-[transform,opacity] duration-500 [backface-visibility:hidden] motion-reduce:[transform:none] motion-reduce:transition-opacity ${
+        className={`absolute inset-0 flex origin-left flex-col items-end justify-center rounded-3xl bg-emerald-700 p-4 shadow-xl transition-[transform,opacity] duration-500 [backface-visibility:hidden] motion-reduce:[transform:none] motion-reduce:transition-opacity ${
           open ? "[transform:rotateY(-110deg)] motion-reduce:opacity-0" : ""
         }`}
       >

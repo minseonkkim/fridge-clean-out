@@ -32,7 +32,7 @@ export function Segmented<T extends string>({
             className={`min-h-11 rounded-lg text-sm font-semibold transition-colors ${
               checked
                 ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-600 dark:text-white"
-                : "text-neutral-500"
+                : "text-neutral-600 dark:text-neutral-300"
             }`}
           >
             {option.label}

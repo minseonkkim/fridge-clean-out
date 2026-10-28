@@ -34,7 +34,7 @@ export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void 
       <div className="flex items-baseline justify-between">
         <h2 id="list-heading" className="font-semibold">
           내 장보기 목록{" "}
-          <span className="font-normal text-neutral-500">
+          <span className="font-normal text-neutral-500 dark:text-neutral-400">
             {checked.length}/{shopping.length}
           </span>
         </h2>
@@ -46,14 +46,16 @@ export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void 
             type="button"
             onClick={moveToFridge}
             disabled={moving}
-            className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-30 mx-auto min-h-14 max-w-md rounded-2xl bg-emerald-600 text-lg font-bold text-white shadow-lg disabled:opacity-50"
+            className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-30 mx-auto min-h-14 max-w-md rounded-2xl bg-emerald-700 text-lg font-bold text-white shadow-lg disabled:opacity-50"
           >
             {moving ? "넣는 중…" : `체크한 ${checked.length}개 냉장고에 넣기`}
           </button>
         </>
       )}
       {shopping.length === 0 ? (
-        <p className="text-sm text-neutral-500">위 추천에서 담거나, 필요한 재료를 담아 두세요.</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          위 추천에서 담거나, 필요한 재료를 담아 두세요.
+        </p>
       ) : (
         <ul
           aria-label="장보기 목록"
@@ -68,16 +70,18 @@ export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void 
                   onChange={(e) => void setShoppingChecked(s.id, e.target.checked)}
                   className="size-5 accent-emerald-600"
                 />
-                <span className={s.checked ? "text-neutral-400 line-through" : ""}>
+                <span
+                  className={s.checked ? "text-neutral-500 line-through dark:text-neutral-400" : ""}
+                >
                   {s.name}
                   {s.quantity !== null && s.unit && (
-                    <span className="ml-1 text-sm text-neutral-500">
+                    <span className="ml-1 text-sm text-neutral-500 dark:text-neutral-400">
                       {s.quantity}
                       {UNIT_LABEL[s.unit]}
                     </span>
                   )}
                   {s.fromRecipeId && (
-                    <span className="ml-2 text-xs text-neutral-400">
+                    <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
                       {RECIPE_BY_ID.get(s.fromRecipeId)?.name}용
                     </span>
                   )}
@@ -87,7 +91,7 @@ export function ShoppingList({ onMoved }: { onMoved?: (message: string) => void 
                 type="button"
                 aria-label={`${s.name} 목록에서 빼기`}
                 onClick={() => void removeShopping([s.id])}
-                className="grid size-11 place-items-center text-xl text-neutral-400"
+                className="grid size-11 place-items-center text-xl text-neutral-500 dark:text-neutral-400"
               >
                 ×
               </button>

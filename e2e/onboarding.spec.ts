@@ -15,8 +15,8 @@ test.describe("온보딩", () => {
     // 2단계: 못 먹는 재료
     await page.getByRole("button", { name: "새우" }).click();
     await page.getByRole("textbox").fill("오이");
-    await page.getByRole("button", { name: "+ 오이" }).click();
-    await expect(page.getByRole("button", { name: "오이" })).toHaveAttribute(
+    await page.getByRole("button", { name: "+ 오이", exact: true }).click();
+    await expect(page.getByRole("button", { name: "오이", exact: true })).toHaveAttribute(
       "aria-pressed",
       "true",
     );

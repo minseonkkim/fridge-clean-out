@@ -128,6 +128,33 @@ export const INGREDIENTS: Ingredient[] = [
   ing("bellflower_root", "도라지", "vegetable", "g", 100, [7, 0, 0], "fridge", ["깐도라지"]),
   ing("cilantro", "고수", "vegetable", "g", 20, [5, 0, 0], "fridge", ["실란트로"]),
 
+  ing("baby_greens", "어린잎채소", "vegetable", "g", 50, [5, 0, 0], "fridge", [
+    "새싹채소",
+    "베이비채소",
+  ]),
+  ing("iceberg", "양상추", "vegetable", "ea", 0.25, [7, 0, 0], "fridge", ["아이스버그"]),
+  ing("chwinamul", "취나물", "vegetable", "g", 100, [4, 60, 0], "fridge"),
+  ing("chamnamul", "참나물", "vegetable", "g", 100, [4, 0, 0], "fridge"),
+  ing("spring_greens", "봄동", "vegetable", "g", 200, [5, 0, 0], "fridge"),
+  ing("naengi", "냉이", "vegetable", "g", 100, [3, 60, 0], "fridge"),
+  ing("dallae", "달래", "vegetable", "g", 50, [4, 0, 0], "fridge"),
+  ing("mugwort", "쑥", "vegetable", "g", 50, [4, 60, 0], "fridge", ["애쑥"]),
+  ing("radish_sprouts", "무순", "vegetable", "g", 30, [4, 0, 0], "fridge", ["새싹무"]),
+  ing("garlic_stem", "마늘종", "vegetable", "g", 100, [10, 60, 0], "fridge", ["마늘쫑"]),
+  ing("bamboo_shoot", "죽순", "vegetable", "g", 100, [7, 60, 0], "fridge", ["삶은 죽순"]),
+  ing("deodeok", "더덕", "vegetable", "g", 100, [7, 60, 0], "fridge"),
+  ing("taro", "토란", "vegetable", "g", 200, [0, 60, 14], "room", ["깐토란"]),
+  ing("yam", "마", "vegetable", "g", 100, [14, 60, 0], "fridge", ["산마", "장마"]),
+  ing("beet", "비트", "vegetable", "ea", 0.5, [21, 0, 0], "fridge", ["레드비트"]),
+  ing("cauliflower", "콜리플라워", "vegetable", "ea", 0.5, [7, 180, 0], "fridge"),
+  ing("shimeji", "만가닥버섯", "vegetable", "pack", 1, [7, 30, 0], "fridge", [
+    "백만송이",
+    "갈색 만가닥",
+  ]),
+  ing("wood_ear", "목이버섯", "vegetable", "g", 10, [0, 0, 180], "room", ["건목이"]),
+  ing("basil", "바질", "vegetable", "g", 10, [5, 0, 0], "fridge", ["생바질"]),
+  ing("parsley", "파슬리", "vegetable", "g", 10, [7, 90, 0], "fridge", ["이탈리안 파슬리"]),
+
   // ── 과일 ────────────────────────────────────
   ing("apple", "사과", "fruit", "ea", 1, [30, 0, 7], "fridge", ["부사", "홍로"]),
   ing("banana", "바나나", "fruit", "ea", 1, [0, 90, 5], "room"),
@@ -143,6 +170,15 @@ export const INGREDIENTS: Ingredient[] = [
   ing("watermelon", "수박", "fruit", "g", 500, [5, 0, 7], "fridge", ["조각수박"]),
   ing("avocado", "아보카도", "fruit", "ea", 0.5, [5, 90, 4], "room"),
   ing("persimmon", "감", "fruit", "ea", 1, [14, 90, 7], "room", ["단감", "홍시", "연시"]),
+
+  ing("mango", "망고", "fruit", "ea", 1, [5, 180, 5], "fridge", ["애플망고", "냉동망고"]),
+  ing("pineapple", "파인애플", "fruit", "g", 200, [5, 90, 2], "fridge"),
+  ing("melon", "멜론", "fruit", "ea", 0.25, [5, 0, 3], "fridge", ["머스크멜론"]),
+  ing("korean_melon", "참외", "fruit", "ea", 1, [7, 0, 3], "fridge"),
+  ing("cherry", "체리", "fruit", "g", 150, [5, 90, 0], "fridge"),
+  ing("plum", "자두", "fruit", "ea", 2, [5, 0, 3], "fridge", ["플럼"]),
+  ing("grapefruit", "자몽", "fruit", "ea", 0.5, [21, 0, 7], "fridge"),
+  ing("fig", "무화과", "fruit", "ea", 2, [3, 90, 0], "fridge"),
 
   // ── 육류 ────────────────────────────────────
   ing("pork", "돼지고기", "meat", "g", 300, [3, 90, 0], "fridge", [
@@ -177,6 +213,15 @@ export const INGREDIENTS: Ingredient[] = [
   ing("chicken_wings", "닭날개", "meat", "g", 300, [2, 270, 0], "fridge", ["닭봉", "윙"]),
   ing("duck", "오리고기", "meat", "g", 300, [3, 180, 0], "fridge", ["생오리"]),
 
+  ing("pork_tenderloin", "돼지 안심", "meat", "g", 200, [3, 180, 0], "fridge", [
+    "돈안심",
+    "돼지안심",
+  ]),
+  ing("beef_ribs", "소갈비", "meat", "g", 300, [3, 180, 0], "fridge", ["LA갈비", "갈비"]),
+  ing("lamb", "양고기", "meat", "g", 200, [3, 180, 0], "fridge", ["양갈비", "양꼬치"]),
+  ing("chicken_gizzard", "닭똥집", "meat", "g", 200, [2, 90, 0], "fridge", ["닭모래집", "근위"]),
+  ing("pork_intestine", "곱창", "meat", "g", 200, [2, 90, 0], "fridge", ["막창", "대창"]),
+
   // ── 해산물 ──────────────────────────────────
   ing("mackerel", "고등어", "seafood", "ea", 1, [2, 90, 0], "fridge", [
     "자반고등어",
@@ -206,6 +251,21 @@ export const INGREDIENTS: Ingredient[] = [
   ing("kelp", "다시마", "seafood", "g", 10, [0, 0, 365], "room", ["국물용 다시마"]),
   ing("laver", "김", "seafood", "pack", 1, [0, 90, 60], "room", ["조미김", "김밥김", "구운김"]),
 
+  ing("cod", "대구", "seafood", "g", 300, [2, 90, 0], "fridge", ["대구살", "생대구"]),
+  ing("spanish_mackerel", "삼치", "seafood", "g", 200, [2, 90, 0], "fridge"),
+  ing("saury", "꽁치", "seafood", "ea", 1, [2, 90, 0], "fridge", ["생꽁치"]),
+  ing("yellow_croaker", "조기", "seafood", "ea", 2, [2, 90, 0], "fridge", ["굴비", "참조기"]),
+  ing("eel", "장어", "seafood", "g", 200, [2, 90, 0], "fridge", ["민물장어", "바다장어"]),
+  ing("abalone", "전복", "seafood", "ea", 2, [3, 90, 0], "fridge", ["활전복"]),
+  ing("crab", "꽃게", "seafood", "ea", 1, [1, 90, 0], "fridge", ["게", "냉동꽃게"]),
+  ing("scallop", "가리비", "seafood", "g", 200, [2, 90, 0], "fridge", ["관자", "키조개"]),
+  ing("cockle", "꼬막", "seafood", "g", 300, [2, 90, 0], "fridge", ["새꼬막", "참꼬막"]),
+  ing("dried_shrimp", "건새우", "seafood", "g", 20, [0, 180, 90], "room", ["보리새우", "꽃새우"]),
+  ing("hijiki", "톳", "seafood", "g", 50, [5, 90, 0], "fridge"),
+  ing("green_laver", "파래", "seafood", "g", 50, [3, 90, 0], "fridge", ["감태"]),
+  ing("maesaengi", "매생이", "seafood", "g", 100, [3, 90, 0], "fridge"),
+  ing("bonito_flakes", "가쓰오부시", "seafood", "g", 5, [0, 0, 180], "room", ["가다랑어포"]),
+
   // ── 계란·유제품 ─────────────────────────────
   ing("egg", "계란", "egg_dairy", "ea", 2, [35, 0, 0], "fridge", ["달걀", "유정란", "왕란"]),
   ing("quail_egg", "메추리알", "egg_dairy", "ea", 10, [14, 0, 0], "fridge", ["깐메추리알"]),
@@ -225,6 +285,9 @@ export const INGREDIENTS: Ingredient[] = [
   ing("cream", "생크림", "egg_dairy", "ml", 100, [7, 0, 0], "fridge", ["휘핑크림"]),
   ing("cream_cheese", "크림치즈", "egg_dairy", "g", 30, [21, 0, 0], "fridge"),
 
+  ing("string_cheese", "스트링치즈", "egg_dairy", "ea", 1, [30, 0, 0], "fridge"),
+  ing("ricotta", "리코타 치즈", "egg_dairy", "g", 100, [7, 0, 0], "fridge", ["리코타"]),
+
   // ── 두부·콩 ─────────────────────────────────
   ing("tofu", "두부", "tofu_bean", "pack", 0.5, [5, 60, 0], "fridge", [
     "부침두부",
@@ -234,6 +297,12 @@ export const INGREDIENTS: Ingredient[] = [
   ing("soft_tofu", "순두부", "tofu_bean", "pack", 1, [5, 0, 0], "fridge", ["연두부"]),
   ing("fried_tofu", "유부", "tofu_bean", "g", 50, [14, 90, 0], "fridge", ["유부초밥"]),
   ing("soybean", "콩", "tofu_bean", "g", 50, [0, 365, 180], "room", ["서리태", "검은콩", "백태"]),
+
+  ing("natto", "낫또", "tofu_bean", "pack", 1, [7, 90, 0], "fridge"),
+  ing("kongbiji", "콩비지", "tofu_bean", "g", 300, [3, 30, 0], "fridge", ["비지"]),
+  ing("chickpea", "병아리콩", "tofu_bean", "g", 100, [0, 180, 365], "room", ["이집트콩"]),
+  ing("red_bean", "팥", "tofu_bean", "g", 100, [0, 180, 365], "room", ["붉은팥"]),
+  ing("mung_bean", "녹두", "tofu_bean", "g", 100, [0, 180, 365], "room", ["깐녹두"]),
 
   // ── 곡류·면 ─────────────────────────────────
   ing("rice", "쌀", "grain_noodle", "g", 160, [0, 0, 90], "room", ["백미", "현미", "잡곡"]),
@@ -264,6 +333,27 @@ export const INGREDIENTS: Ingredient[] = [
   ing("bread_crumbs", "빵가루", "grain_noodle", "g", 50, [0, 90, 90], "room"),
   ing("oats", "오트밀", "grain_noodle", "g", 40, [0, 0, 180], "room", ["귀리", "오트"]),
 
+  ing("glutinous_rice", "찹쌀", "grain_noodle", "g", 100, [0, 0, 365], "room"),
+  ing("jjolmyeon", "쫄면", "grain_noodle", "g", 200, [30, 90, 0], "fridge", ["쫄면사리"]),
+  ing("kalguksu_noodle", "칼국수면", "grain_noodle", "g", 200, [7, 30, 0], "fridge", [
+    "칼국수",
+    "생칼국수",
+  ]),
+  ing("rice_noodle", "쌀국수면", "grain_noodle", "g", 100, [0, 0, 365], "room", [
+    "쌀국수",
+    "버미셀리",
+  ]),
+  ing("macaroni", "마카로니", "grain_noodle", "g", 100, [0, 0, 365], "room"),
+  ing("dumpling_wrapper", "만두피", "grain_noodle", "pack", 1, [7, 90, 0], "fridge"),
+  ing("bagel", "베이글", "grain_noodle", "ea", 1, [0, 90, 3], "room"),
+  ing("baguette", "바게트", "grain_noodle", "ea", 0.5, [0, 90, 2], "room", ["바게뜨", "치아바타"]),
+  ing("hamburger_bun", "햄버거빵", "grain_noodle", "ea", 1, [0, 60, 3], "room", ["번", "모닝빵"]),
+  ing("cereal", "시리얼", "grain_noodle", "g", 40, [0, 0, 90], "room", ["콘플레이크", "그래놀라"]),
+  ing("pancake_mix", "핫케이크 가루", "grain_noodle", "g", 100, [0, 0, 180], "room", [
+    "팬케이크 가루",
+    "핫케익가루",
+  ]),
+
   // ── 가공식품 ────────────────────────────────
   ing("ham", "햄", "processed", "g", 100, [7, 60, 0], "fridge", ["슬라이스햄", "김밥햄"]),
   ing("canned_ham", "캔햄", "processed", "ea", 0.5, [5, 60, 365], "room", ["스팸", "런천미트"]),
@@ -288,6 +378,27 @@ export const INGREDIENTS: Ingredient[] = [
   ing("nuggets", "치킨너겟", "processed", "g", 200, [0, 180, 0], "freezer", ["너겟"]),
   ing("frozen_veg", "냉동 믹스채소", "processed", "g", 100, [0, 240, 0], "freezer", ["믹스베지"]),
 
+  ing("pork_cutlet", "돈가스", "processed", "ea", 1, [3, 90, 0], "freezer", [
+    "돈까스",
+    "냉동돈가스",
+  ]),
+  ing("tteokgalbi", "떡갈비", "processed", "ea", 2, [5, 90, 0], "freezer", ["냉동떡갈비"]),
+  ing("frozen_fries", "감자튀김", "processed", "g", 150, [0, 180, 0], "freezer", [
+    "냉동감자",
+    "웨지감자",
+  ]),
+  ing("frozen_fried_rice", "냉동 볶음밥", "processed", "pack", 1, [0, 90, 0], "freezer", [
+    "냉동볶음밥",
+  ]),
+  ing("sundae", "순대", "processed", "g", 200, [3, 90, 0], "fridge", ["찰순대"]),
+  ing("jokbal", "족발", "processed", "g", 300, [3, 30, 0], "fridge", ["미니족발"]),
+  ing("smoked_salmon", "훈제연어", "processed", "g", 100, [7, 90, 0], "fridge", ["훈제 연어"]),
+  ing("canned_saury", "꽁치 통조림", "processed", "ea", 1, [3, 0, 365], "room", ["꽁치캔"]),
+  ing("canned_tomato", "토마토 통조림", "processed", "ea", 1, [5, 0, 365], "room", [
+    "홀토마토",
+    "토마토캔",
+  ]),
+
   // ── 김치·반찬 ───────────────────────────────
   ing("kimchi", "배추김치", "side_kimchi", "g", 200, [60, 0, 0], "fridge", [
     "김치",
@@ -300,6 +411,14 @@ export const INGREDIENTS: Ingredient[] = [
   ing("pickled_radish", "단무지", "side_kimchi", "g", 50, [30, 0, 0], "fridge"),
   ing("jangjorim", "장조림", "side_kimchi", "g", 100, [7, 0, 0], "fridge", ["메추리알 장조림"]),
   ing("side_dish", "밑반찬", "side_kimchi", "g", 100, [5, 0, 0], "fridge", ["반찬", "나물"]),
+
+  ing("pollack_roe", "명란젓", "side_kimchi", "g", 50, [14, 180, 0], "fridge", ["명란", "백명란"]),
+  ing("salted_squid", "오징어젓", "side_kimchi", "g", 50, [30, 180, 0], "fridge", ["오징어젓갈"]),
+  ing("pickled_cucumber", "오이지", "side_kimchi", "g", 100, [30, 0, 0], "fridge"),
+  ing("pickles", "피클", "side_kimchi", "g", 50, [60, 0, 0], "fridge", ["오이피클"]),
+  ing("dongchimi", "동치미", "side_kimchi", "ml", 300, [21, 0, 0], "fridge", ["동치미 국물"]),
+  ing("pa_kimchi", "파김치", "side_kimchi", "g", 100, [30, 0, 0], "fridge"),
+  ing("baek_kimchi", "백김치", "side_kimchi", "g", 150, [30, 0, 0], "fridge"),
 
   // ── 양념·소스 (staple = 기본 양념, 있다고 가정) ─────────
   ing(
@@ -360,11 +479,40 @@ export const INGREDIENTS: Ingredient[] = [
   ]),
   ing("starch", "전분", "sauce", "g", 10, [0, 0, 365], "room", ["감자전분", "녹말가루"]),
 
+  ing("shrimp_salted", "새우젓", "sauce", "g", 10, [180, 365, 0], "fridge", ["육젓", "추젓"]),
+  ing("cheonggukjang", "청국장", "sauce", "g", 100, [14, 180, 0], "fridge"),
+  ing("chunjang", "춘장", "sauce", "g", 50, [180, 0, 0], "fridge", ["짜장가루", "짜장소스"]),
+  ing("doubanjiang", "두반장", "sauce", "g", 15, [180, 0, 0], "fridge"),
+  ing("tomato_sauce", "토마토 소스", "sauce", "g", 150, [7, 90, 365], "room", [
+    "파스타 소스",
+    "스파게티 소스",
+  ]),
+  ing("chili_oil", "고추기름", "sauce", "ml", 10, [0, 0, 180], "room", ["라유"]),
+  ing("sriracha", "스리라차", "sauce", "ml", 5, [180, 0, 180], "room", ["핫소스"]),
+  ing("sweet_chili", "스위트칠리 소스", "sauce", "ml", 20, [90, 0, 0], "fridge", ["칠리소스"]),
+  ing("tonkatsu_sauce", "돈가스 소스", "sauce", "ml", 30, [90, 0, 0], "fridge", ["돈까스 소스"]),
+  ing("teriyaki", "데리야끼 소스", "sauce", "ml", 30, [90, 0, 0], "fridge", ["데리야키 소스"]),
+  ing("balsamic", "발사믹 식초", "sauce", "ml", 15, [0, 0, 365], "room", ["발사믹"]),
+  ing("plum_extract", "매실청", "sauce", "ml", 15, [0, 0, 365], "room", ["매실액"]),
+  ing("peanut_butter", "땅콩버터", "sauce", "g", 20, [0, 0, 90], "room"),
+  ing("jam", "잼", "sauce", "g", 20, [90, 0, 0], "fridge", ["딸기잼", "블루베리잼"]),
+  ing("cinnamon", "시나몬 가루", "sauce", "g", 2, [0, 0, 365], "room", ["계피가루", "시나몬"]),
+
   // ── 음료·기타 ───────────────────────────────
   ing("soy_milk", "두유", "beverage", "ml", 200, [7, 0, 90], "room"),
   ing("juice", "주스", "beverage", "ml", 200, [7, 0, 0], "fridge", ["오렌지주스", "사과주스"]),
   ing("honey", "꿀", "etc", "g", 10, [0, 0, 730], "room", ["벌꿀"]),
   ing("nuts", "견과류", "etc", "g", 20, [90, 180, 60], "room", ["아몬드", "호두", "땅콩"]),
+  ing("coffee", "커피", "beverage", "g", 15, [0, 0, 180], "room", ["원두", "인스턴트커피"]),
+  ing("sparkling_water", "탄산수", "beverage", "ml", 500, [0, 0, 365], "room"),
+  ing("cola", "콜라", "beverage", "ml", 500, [0, 0, 180], "room", ["사이다"]),
+  ing("beer", "맥주", "beverage", "ml", 355, [180, 0, 180], "fridge", ["캔맥주"]),
+  ing("makgeolli", "막걸리", "beverage", "ml", 750, [10, 0, 0], "fridge", ["생막걸리"]),
+  ing("chestnut", "밤", "etc", "g", 100, [30, 180, 0], "fridge", ["깐밤", "군밤"]),
+  ing("jujube", "대추", "etc", "g", 20, [0, 180, 90], "room", ["건대추"]),
+  ing("pine_nuts", "잣", "etc", "g", 10, [90, 365, 0], "fridge"),
+  ing("raisin", "건포도", "etc", "g", 20, [0, 0, 180], "room", ["크랜베리", "건크랜베리"]),
+  ing("chocolate", "초콜릿", "etc", "g", 30, [0, 0, 180], "room", ["다크초콜릿", "초코칩"]),
 ];
 
 export const INGREDIENT_BY_ID: ReadonlyMap<string, Ingredient> = new Map(

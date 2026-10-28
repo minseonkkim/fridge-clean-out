@@ -17,18 +17,20 @@ test.describe("장보기", () => {
 
     const buyOne = page.getByRole("region", { name: "딱 하나만 산다면" });
     await expect(buyOne.getByRole("listitem").first()).toBeVisible();
-    // 김치찌개는 돼지고기/참치캔/캔햄 중 하나만 있으면 된다
-    await expect(buyOne).toContainText("김치찌개");
-
-    await buyOne.getByRole("button", { name: "돼지고기 장보기에 담기" }).click();
+    // 1위 재료를 담는다 (레시피가 늘어 순위가 바뀌어도 되도록 이름을 화면에서 읽는다)
+    const first = buyOne.getByRole("button", { name: / 장보기에 담기$/ }).first();
+    const name =
+      (await first.getAttribute("aria-label"))?.replace(" 장보기에 담기", "") ??
+      (await first.textContent())!;
+    await first.click();
     await expect(
       page.getByRole("status").filter({ hasText: "장보기 목록에 1개 담았어요." }),
     ).toBeVisible();
     const list = page.getByRole("list", { name: "장보기 목록" });
-    await expect(list).toContainText("돼지고기");
+    await expect(list).toContainText(name);
 
     // 같은 재료는 다시 담지 않는다
-    await buyOne.getByRole("button", { name: "돼지고기 장보기에 담기" }).click();
+    await buyOne.getByRole("button", { name: `${name} 장보기에 담기` }).click();
     await expect(page.getByRole("status").filter({ hasText: "이미 목록에 있어요." })).toBeVisible();
     await expect(list.getByRole("listitem")).toHaveCount(1);
   });

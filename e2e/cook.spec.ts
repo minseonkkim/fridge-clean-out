@@ -22,8 +22,12 @@ test.describe("요리 완료", () => {
     await expect(list).toContainText("돼지고기 150g");
 
     await sheet.getByRole("button", { name: "김치찌개 완료" }).click();
+    // 재료 두 개가 냄비로 모여든 뒤 차감된다
+    const pot = page.locator("[data-cook-pot]");
+    await expect(pot.locator("[data-pot-ingredient]")).toHaveCount(2);
     const result = page.getByRole("status", { name: "요리 완료 결과" });
     await expect(result).toContainText("김치찌개 완료!");
+    await expect(pot).toHaveCount(0);
 
     // 돼지고기는 다 써서 냉장고에서 빠지고, 김치는 300g 남는다
     await page.goto("/fridge");
@@ -49,6 +53,19 @@ test.describe("요리 완료", () => {
       "계란 1팩은(는) 레시피와 단위가 달라 다 쓴 것으로 처리했어요",
     );
     await expect(result.getByRole("link", { name: "냉장고에서 수량을 고쳐" })).toBeVisible();
+  });
+
+  test("움직임 줄이기 설정이면 냄비 연출 없이 바로 차감한다", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await addBulk(page, "김치 500g, 돼지고기 150g", 2);
+    await page.goto("/recipes/kimchi_stew");
+    await page.getByRole("button", { name: "요리 완료" }).click();
+    await page.getByRole("button", { name: "김치찌개 완료" }).click();
+    await expect(page.getByRole("status", { name: "요리 완료 결과" })).toContainText(
+      "김치찌개 완료!",
+    );
+    await page.goto("/fridge");
+    await expect(page.getByRole("button", { name: /배추김치/ })).toContainText("300g");
   });
 
   test("필수 재료가 없으면 요리 완료를 누를 수 없다", async ({ page }) => {

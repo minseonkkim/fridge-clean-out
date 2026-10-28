@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BottomSheet } from "@/components/bottom-sheet";
+import { CookPot, type PotIngredient } from "@/components/cook-pot";
+import { ingredientIcon } from "@/data/ingredient-icons";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { planCookUsage, type CookPlan } from "@/lib/domain/cook";
 import { itemDisplayName, type FridgeItem } from "@/lib/domain/fridge";
@@ -14,7 +16,7 @@ const baseLookup = (id: string) => INGREDIENT_BY_ID.get(id);
 
 interface Preview {
   plan: CookPlan;
-  lines: { itemId: string; text: string; mismatched: boolean }[];
+  lines: { itemId: string; icon: string; text: string; mismatched: boolean }[];
   mismatched: string[];
 }
 
@@ -28,7 +30,7 @@ function usageText(item: FridgeItem, amount: number | null): string {
 /**
  * 요리 완료 (기획서 F3-2, F3-3).
  * 1. 누르면 어떤 재료를 얼마나 뺄지 미리 보여 준다.
- * 2. 확인하면 재고를 차감한다 (계정 모드는 cook_recipe RPC 한 트랜잭션).
+ * 2. 확인하면 재료가 냄비로 모이는 연출 뒤 재고를 차감한다 (계정 모드는 cook_recipe RPC 한 트랜잭션).
  * 3. 단위가 달라 통째로 다 쓴 것으로 처리한 재료는 수량을 고치도록 안내한다.
  * 차감 뒤 냉장고 데이터를 다시 불러오므로 식단 플랜도 다시 계산된다.
  */
@@ -49,6 +51,9 @@ export function CookButton({
   const [preview, setPreview] = useState<Preview | null>(null);
   const [done, setDone] = useState<{ used: string[]; mismatched: string[] } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [gathering, setGathering] = useState<PotIngredient[] | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const cookingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -63,6 +68,10 @@ export function CookButton({
       plan,
       lines: plan.usages.map((u) => ({
         itemId: u.itemId,
+        icon: ingredientIcon(
+          byId.get(u.itemId)!.ingredientId,
+          baseLookup(byId.get(u.itemId)!.ingredientId ?? "")?.category,
+        ),
         text: usageText(byId.get(u.itemId)!, u.amount),
         mismatched: plan.mismatched.includes(u.itemId),
       })),
@@ -74,8 +83,30 @@ export function CookButton({
     setError(null);
   }
 
-  async function confirm() {
+  /** 시트 속 재료 아이콘 자리에서 냄비로 날아가는 연출을 시작한다 */
+  function confirm() {
     if (!preview) return;
+    const icons = listRef.current?.querySelectorAll<HTMLElement>("[data-usage-icon]") ?? [];
+    const from = [...icons].map((el, i) => {
+      const r = el.getBoundingClientRect();
+      return {
+        key: preview.lines[i].itemId,
+        icon: preview.lines[i].icon,
+        from: { x: r.left, y: r.top, width: r.width, height: r.height },
+      };
+    });
+    if (from.length === 0) {
+      void finish();
+      return;
+    }
+    setBusy(true);
+    setGathering(from);
+  }
+
+  async function finish() {
+    // 개발 모드 StrictMode에서 연출 효과가 두 번 돌아도 한 번만 차감한다
+    if (!preview || cookingRef.current) return;
+    cookingRef.current = true;
     setBusy(true);
     setError(null);
     try {
@@ -90,6 +121,8 @@ export function CookButton({
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
+      setGathering(null);
+      cookingRef.current = false;
     }
   }
 
@@ -130,7 +163,9 @@ export function CookButton({
         {canCook ? "요리 완료" : "재료가 모자라요"}
       </button>
 
-      {preview && (
+      {gathering && <CookPot ingredients={gathering} onDone={finish} />}
+
+      {preview && !gathering && (
         <BottomSheet
           open
           onClose={() => setPreview(null)}
@@ -146,10 +181,15 @@ export function CookButton({
             </button>
           }
         >
-          <ul aria-label="뺄 재료" className="flex flex-col gap-2">
+          <ul ref={listRef} aria-label="뺄 재료" className="flex flex-col gap-2">
             {preview.lines.map((line) => (
               <li key={line.itemId} className="flex min-h-11 items-center justify-between gap-2">
-                <span>{line.text}</span>
+                <span className="flex items-center gap-2">
+                  <span data-usage-icon aria-hidden className="text-2xl">
+                    {line.icon}
+                  </span>
+                  {line.text}
+                </span>
                 {line.mismatched && (
                   <span className="text-xs text-amber-700">단위가 달라 전부 사용</span>
                 )}

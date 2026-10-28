@@ -80,4 +80,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  /* viewport-fit=cover라 노치·홈 인디케이터·가로 모드 둥근 모서리 아래로 내용이 들어가지 않게 한다.
+     화면에 고정된 요소(탭 바·시트·버튼)는 각자 env(safe-area-inset-*)를 더한다. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
 }

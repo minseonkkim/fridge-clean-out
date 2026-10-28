@@ -95,7 +95,7 @@ export function CompartmentZoom({
       role="dialog"
       aria-modal="true"
       aria-label={`${label} 크게 보기`}
-      className="fixed inset-0 z-30 bg-black/30 p-3 pb-[calc(env(safe-area-inset-bottom)+5rem)]"
+      className="fixed inset-0 z-30 bg-black/30 p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+5rem)]"
       onKeyDown={(e) => e.key === "Escape" && closeViaUi()}
       onClick={(e) => e.target === e.currentTarget && closeViaUi()}
       onTouchStart={(e) => {

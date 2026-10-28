@@ -27,7 +27,7 @@ export function ItemDetailSheet({
   item: FridgeItem;
   onClose: () => void;
   /** 다 씀·버림으로 냉장고에서 뺐을 때 알림 문구 */
-  onClosed?: (message: string) => void;
+  onClosed?: (message: string, status: "used_up" | "discarded") => void;
 }) {
   const { updateItem, closeItem } = useFridge();
   const ingredient = item.ingredientId ? lookup(item.ingredientId) : undefined;
@@ -68,6 +68,7 @@ export function ItemDetailSheet({
         status === "used_up"
           ? `${josa(name, "을", "를")} 다 썼어요.`
           : `${josa(name, "을", "를")} 버렸어요.`,
+        status,
       );
       onClose();
     } catch (e) {

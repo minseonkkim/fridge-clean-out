@@ -81,6 +81,28 @@ test.describe("재료 상세 시트", () => {
     await expect(page.getByText("냉장고가 비어 있어요")).toBeVisible();
   });
 
+  test("다 씀은 접시로, 버림은 휴지통으로 날아가는 연출이 나온다", async ({ page }) => {
+    await page.getByRole("button", { name: /^양파/ }).click();
+    await page.getByRole("dialog", { name: "양파" }).getByRole("button", { name: /다 씀/ }).click();
+    await expect(page.locator('[data-flyaway="plate"]')).toBeAttached();
+    await expect(page.locator('[data-flyaway="plate"]')).toHaveCount(0, { timeout: 3000 });
+
+    await page.getByRole("button", { name: /^돼지고기/ }).click();
+    await page
+      .getByRole("dialog", { name: "돼지고기" })
+      .getByRole("button", { name: /버림/ })
+      .click();
+    await expect(page.locator('[data-flyaway="trash"]')).toBeAttached();
+  });
+
+  test("움직임 줄이기 설정이면 날아가는 연출을 생략한다", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.getByRole("button", { name: /^양파/ }).click();
+    await page.getByRole("dialog", { name: "양파" }).getByRole("button", { name: /다 씀/ }).click();
+    await expect(page.getByRole("status").filter({ hasText: "양파를 다 썼어요." })).toBeVisible();
+    await expect(page.locator("[data-flyaway]")).toHaveCount(0);
+  });
+
   test("냉동으로 옮기면 기한과 칸이 바뀐다", async ({ page }) => {
     await page.getByRole("button", { name: /돼지고기/ }).click();
     const sheet = page.getByRole("dialog", { name: "돼지고기" });

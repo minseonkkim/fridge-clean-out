@@ -58,6 +58,7 @@ function ItemRow({ item, onSelect }: { item: FridgeItem; onSelect?: (item: Fridg
       <button
         type="button"
         onClick={() => onSelect?.(item)}
+        data-item-id={item.id}
         className="flex min-h-14 w-full items-center gap-3 px-1 text-left"
       >
         <span className="flex-1">

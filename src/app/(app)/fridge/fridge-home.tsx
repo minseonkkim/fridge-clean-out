@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
+import { FlyAway, type FlyAwayRequest } from "@/components/fridge/fly-away";
 import { FridgeView } from "@/components/fridge/fridge-view";
 import { Segmented } from "@/components/segmented";
 import { ItemDetailSheet } from "@/components/item-detail-sheet";
@@ -59,6 +60,16 @@ export function FridgeHome() {
   const { show, toast } = useToast();
   // 브라우저 저장소를 읽지만, 보기는 snapshot(브라우저에서만 채워짐)이 있을 때만 그리므로 수화 불일치가 없다.
   const [view, setView] = useState<View>(loadView);
+  const [fly, setFly] = useState<FlyAwayRequest | null>(null);
+  /** 고른 재료의 화면 위치 (다 씀·버림 연출의 출발점) */
+  const selectedRect = useRef<FlyAwayRequest["from"] | null>(null);
+
+  function selectItem(item: FridgeItem) {
+    const el = document.querySelector(`[data-item-id="${item.id}"]`);
+    const r = el?.getBoundingClientRect();
+    selectedRect.current = r ? { x: r.left, y: r.top, width: r.width, height: r.height } : null;
+    setSelectedId(item.id);
+  }
 
   /** 끌어다 놓은 칸으로 옮긴다. 보관 방식이 바뀌면 기한을 다시 잡고 알려 준다 (기획서 3.2절). */
   async function moveItem(item: FridgeItem, to: CompartmentSlot) {
@@ -138,14 +149,10 @@ export function FridgeHome() {
                     냉장고가 비어 있어요. 오른쪽 아래 + 버튼으로 재료를 넣어 보세요.
                   </p>
                 )}
-                <FridgeView
-                  items={snapshot.items}
-                  onSelect={(item) => setSelectedId(item.id)}
-                  onMove={moveItem}
-                />
+                <FridgeView items={snapshot.items} onSelect={selectItem} onMove={moveItem} />
               </>
             ) : (
-              <ItemList items={snapshot.items} onSelect={(item) => setSelectedId(item.id)} />
+              <ItemList items={snapshot.items} onSelect={selectItem} />
             )}
           </>
         )}
@@ -177,9 +184,20 @@ export function FridgeHome() {
           key={selected.id}
           item={selected}
           onClose={() => setSelectedId(null)}
-          onClosed={show}
+          onClosed={(message, status) => {
+            show(message);
+            if (selectedRect.current) {
+              setFly({
+                id: Date.now(),
+                kind: status === "used_up" ? "plate" : "trash",
+                name: itemDisplayName(selected, (id) => INGREDIENT_BY_ID.get(id)),
+                from: selectedRect.current,
+              });
+            }
+          }}
         />
       )}
+      {fly && <FlyAway key={fly.id} request={fly} onDone={() => setFly(null)} />}
       {toast}
     </main>
   );

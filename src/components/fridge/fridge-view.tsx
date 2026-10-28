@@ -118,6 +118,7 @@ function ItemToken({
       onAnimationEnd={() => setPopping(false)}
       aria-label={`${name} ${qty} ${dDayLabel(left)}`}
       aria-describedby="drag-hint"
+      data-item-id={item.id}
       data-popping={popping || undefined}
       className={`flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1 text-xs ring-2 select-none [-webkit-touch-callout:none] ${TONE[level]} ${
         popping ? "animate-[item-pop_260ms_ease-out] motion-reduce:animate-none" : ""

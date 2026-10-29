@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { FlyAwayRequest } from "@/components/fridge/fly-away";
 import type { CompartmentSlot, FridgeItem } from "@/lib/domain/fridge";
 
 /**
@@ -24,6 +25,9 @@ export function FridgeView(props: {
   onMove?: (item: FridgeItem, to: CompartmentSlot) => void;
   /** 밝게 보여 줄 재료 (나머지는 어둡게). 식단의 요리에 쓰이는 재료 */
   highlight?: ReadonlySet<string> | null;
+  /** 다 씀·버림으로 떠나는 재료 (3D 접시·휴지통 연출) */
+  departure?: FlyAwayRequest | null;
+  onDepartureDone?: () => void;
 }) {
   return <Fridge3D {...props} />;
 }

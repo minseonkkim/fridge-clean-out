@@ -84,24 +84,24 @@ export function CookButton({
     setError(null);
   }
 
-  /** 시트 속 재료 아이콘 자리에서 냄비로 날아가는 연출을 시작한다 */
+  /** 쓸 재료가 3D 냄비로 들어가는 연출을 시작한다 */
   function confirm() {
     if (!preview) return;
-    const icons = listRef.current?.querySelectorAll<HTMLElement>("[data-usage-icon]") ?? [];
-    const from = [...icons].map((el, i) => {
-      const r = el.getBoundingClientRect();
+    const byId = new Map(items.map((i) => [i.id, i]));
+    const pot: PotIngredient[] = preview.lines.map((line) => {
+      const ingredientId = byId.get(line.itemId)?.ingredientId ?? null;
       return {
-        key: preview.lines[i].itemId,
-        icon: preview.lines[i].icon,
-        from: { x: r.left, y: r.top, width: r.width, height: r.height },
+        key: line.itemId,
+        ingredientId,
+        category: (ingredientId && baseLookup(ingredientId)?.category) || null,
       };
     });
-    if (from.length === 0) {
+    if (pot.length === 0) {
       void finish();
       return;
     }
     setBusy(true);
-    setGathering(from);
+    setGathering(pot);
   }
 
   async function finish() {

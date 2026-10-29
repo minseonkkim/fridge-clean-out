@@ -20,6 +20,8 @@ import { SLOT_LABEL, groupBySlot, urgencySummary } from "@/lib/domain/fridge-vie
 import { UNIT_LABEL } from "@/lib/domain/types";
 import { Intro, introSeen, markIntroSeen } from "./intro";
 import { renderDpr } from "./layout";
+import * as THREE from "three";
+import type { FlyAwayRequest } from "@/components/fridge/fly-away";
 import { Overlay } from "./overlay";
 import {
   CameraRig,
@@ -441,11 +443,16 @@ export default function Fridge3D({
   onSelect,
   onMove,
   highlight = null,
+  departure = null,
+  onDepartureDone,
 }: {
   items: FridgeItem[];
   onSelect?: (item: FridgeItem) => void;
   onMove?: (item: FridgeItem, to: CompartmentSlot) => void;
   highlight?: ReadonlySet<string> | null;
+  /** 다 씀·버림으로 냉장고를 떠나는 재료 (3D로 접시·휴지통에 날아간다) */
+  departure?: FlyAwayRequest | null;
+  onDepartureDone?: () => void;
 }) {
   const overlay = useMemo(() => new Overlay(), []);
   const reducedMotion = usePrefersReducedMotion();
@@ -578,7 +585,28 @@ export default function Fridge3D({
     setPoppingId(null);
     requestAnimationFrame(() => setPoppingId(id));
   }, []);
-  const select = useCallback((item: FridgeItem) => onSelect?.(item), [onSelect]);
+  // 고른 재료의 3D 자리를 기억해 둔다 (다 씀·버림 뒤에는 재료가 사라지므로)
+  const lastPlace = useRef(new Map<string, { from: [number, number, number]; size: number }>());
+  const select = useCallback(
+    (item: FridgeItem) => {
+      const obj = overlay.object(`item:${item.id}`);
+      if (obj) {
+        obj.updateWorldMatrix(true, false);
+        const p = new THREE.Vector3();
+        const s = new THREE.Vector3();
+        obj.getWorldPosition(p);
+        obj.getWorldScale(s);
+        lastPlace.current.set(item.id, { from: [p.x, p.y, p.z], size: s.x });
+      }
+      onSelect?.(item);
+    },
+    [onSelect, overlay],
+  );
+  const place = departure?.itemId ? lastPlace.current.get(departure.itemId) : undefined;
+  useEffect(() => {
+    // 움직임 줄이기거나 자리를 모르면 연출 없이 끝낸다
+    if (departure && (reducedMotion || !place)) onDepartureDone?.();
+  }, [departure, reducedMotion, place, onDepartureDone]);
 
   const world: WorldState = {
     bySlot,
@@ -588,6 +616,18 @@ export default function Fridge3D({
     poppingId,
     reducedMotion,
     dark,
+    departure:
+      departure && place && !reducedMotion
+        ? {
+            id: departure.id,
+            kind: departure.kind,
+            ingredientId: departure.ingredientId ?? null,
+            category: departure.category ?? null,
+            from: place.from,
+            size: place.size,
+            onDone: () => onDepartureDone?.(),
+          }
+        : null,
   };
   const summary = urgencySummary(items, todayIso());
   const freezerCount = at("freezer_upper").length + at("freezer_lower").length;
@@ -615,7 +655,7 @@ export default function Fridge3D({
               data-fridge-3d
               data-door={doorOpen ? "open" : "closed"}
               data-motion={reducedMotion ? "reduced" : "full"}
-              className="relative isolate z-0 h-[68dvh] min-h-[460px] overflow-hidden rounded-3xl [contain:layout_paint] bg-gradient-to-b from-amber-50 to-orange-100 dark:from-neutral-900 dark:to-neutral-950"
+              className="relative isolate z-0 h-[68dvh] min-h-[460px] overflow-hidden rounded-3xl bg-gradient-to-b from-amber-50 to-orange-100 [contain:layout_paint] dark:from-neutral-900 dark:to-neutral-950"
             >
               <Canvas
                 flat
@@ -743,6 +783,7 @@ export default function Fridge3D({
                 )}
               </div>
             )}
+            {world.departure && <span hidden aria-hidden data-flyaway={world.departure.kind} />}
             {intro && <Intro world={{ ...world, doorOpen: false }} onDone={finishIntro} />}
           </SelectContext>
         </HighlightContext>

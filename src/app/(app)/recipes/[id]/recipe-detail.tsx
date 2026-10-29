@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { StepTimer } from "@/components/step-timer";
@@ -15,15 +16,28 @@ import { lookupWithPantry } from "@/lib/planner/preferences";
 import { useFridge } from "@/lib/repo/fridge-context";
 
 const baseLookup = (id: string) => INGREDIENT_BY_ID.get(id);
+
+/** 조리 과정 3D는 무거우므로 따로 내려받는다 */
+const RecipeStage3D = dynamic(() => import("@/components/cooking3d/recipe-stage"), {
+  ssr: false,
+  loading: () => (
+    <div
+      role="status"
+      aria-label="조리 과정을 준비하는 중"
+      className="h-56 animate-pulse rounded-3xl bg-gradient-to-b from-amber-50 to-orange-50 dark:from-neutral-900 dark:to-neutral-950"
+    />
+  ),
+});
 const DIFFICULTY = ["", "쉬움", "보통", "어려움"];
 
 export function RecipeDetail({ recipeId }: { recipeId: string }) {
   const recipe = RECIPE_BY_ID.get(recipeId)!;
   const { snapshot } = useFridge();
   const [servings, setServings] = useState(recipe.servings);
+  const [step, setStep] = useState(0);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-4 pb-28">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pt-4 pb-48">
       <Link
         href="/plan"
         className="min-h-11 self-start py-2 text-sm text-neutral-500 dark:text-neutral-400"
@@ -66,18 +80,26 @@ export function RecipeDetail({ recipeId }: { recipeId: string }) {
             · 약 {recipe.minutes}분
           </span>
         </h2>
+        <RecipeStage3D recipe={recipe} step={step} onStep={setStep} />
         <ol className="flex flex-col gap-3">
-          {recipe.steps.map((step, i) => (
+          {recipe.steps.map((s, i) => (
             <li key={i} className="flex gap-3">
-              <span
-                aria-hidden
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-emerald-700 text-sm font-bold text-white"
+              <button
+                type="button"
+                onClick={() => setStep(i)}
+                aria-label={`${i + 1}단계 3D로 보기`}
+                aria-pressed={i === step}
+                className={`grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold ${
+                  i === step
+                    ? "bg-amber-700 text-white ring-4 ring-amber-200 dark:ring-amber-900"
+                    : "bg-emerald-700 text-white"
+                }`}
               >
                 {i + 1}
-              </span>
+              </button>
               <div className="flex-1 pt-0.5">
-                <p>{step.text}</p>
-                {step.timerSec && <StepTimer seconds={step.timerSec} />}
+                <p>{s.text}</p>
+                {s.timerSec && <StepTimer seconds={s.timerSec} />}
               </div>
             </li>
           ))}

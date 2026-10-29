@@ -2,11 +2,15 @@
 
 import { useLayoutEffect, useRef } from "react";
 import { UiArt } from "@/components/ui-art";
+import type { IngredientCategory } from "@/lib/domain/types";
 
 export interface FlyAwayRequest {
   id: number;
   kind: "plate" | "trash";
   name: string;
+  itemId?: string;
+  ingredientId?: string | null;
+  category?: IngredientCategory | null;
   /** 재료가 있던 화면 위치 */
   from: { x: number; y: number; width: number; height: number };
 }

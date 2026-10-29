@@ -7,6 +7,7 @@ import { ingredientSpec } from "@/data/ingredient-art";
 import { INGREDIENT_BY_ID } from "@/data/ingredients";
 import { daysLeft, freshness, todayIso } from "@/lib/domain/expiry";
 import type { CompartmentSlot, FridgeItem } from "@/lib/domain/fridge";
+import type { IngredientCategory } from "@/lib/domain/types";
 import { ingredientModel } from "@/three/models";
 import {
   DRAWERS,
@@ -34,6 +35,75 @@ export interface WorldState {
   poppingId: string | null;
   reducedMotion: boolean;
   dark: boolean;
+  /** 다 씀(접시)·버림(휴지통)으로 냉장고를 떠나는 재료 */
+  departure?: Departure | null;
+}
+
+export interface Departure {
+  id: number;
+  kind: "plate" | "trash";
+  ingredientId: string | null;
+  category: IngredientCategory | null;
+  /** 냉장고 안에 있던 자리 (월드 좌표)와 크기 */
+  from: Vec3;
+  size: number;
+  onDone: () => void;
+}
+
+const DEPART_MS = 900;
+
+/** 재료가 냉장고에서 튀어나와 바닥의 접시·휴지통으로 날아간다 */
+function Departing({ d, m }: { d: Departure; m: Mats }) {
+  const { key, spec } = ingredientSpec(d.ingredientId, d.category);
+  const model = useMemo(() => ingredientModel(key, spec), [key, spec]);
+  const g = useRef<THREE.Group>(null);
+  const target = useRef<THREE.Group>(null);
+  const start = useRef<number | null>(null);
+  const finished = useRef(false);
+  const to: Vec3 = d.kind === "plate" ? [-0.55, 0.06, 1.35] : [0.75, 0.6, 1.35];
+  useFrame(({ clock, invalidate }) => {
+    if (start.current === null) start.current = clock.elapsedTime;
+    const p = Math.min(1, ((clock.elapsedTime - start.current) * 1000) / DEPART_MS);
+    if (target.current) target.current.scale.setScalar(Math.min(1, p * 4));
+    if (g.current) {
+      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      g.current.position.set(
+        d.from[0] + (to[0] - d.from[0]) * e,
+        d.from[1] + (to[1] - d.from[1]) * e + Math.sin(e * PI) * 0.9,
+        d.from[2] + (to[2] - d.from[2]) * e,
+      );
+      g.current.rotation.set(d.kind === "trash" ? e * PI * 2 : 0, e * PI, 0);
+      g.current.scale.setScalar(d.size * (d.kind === "trash" ? 1 - e * 0.6 : 1 - e * 0.2));
+    }
+    if (p < 1) invalidate();
+    else if (!finished.current) {
+      finished.current = true;
+      d.onDone();
+    }
+  });
+  return (
+    <group>
+      <group ref={target} position={to}>
+        {d.kind === "plate" ? (
+          <mesh material={m.counter}>
+            <cylinderGeometry args={[0.42, 0.32, 0.05, 32]} />
+          </mesh>
+        ) : (
+          <group>
+            <mesh position={[0, -0.3, 0]} material={m.plinth}>
+              <cylinderGeometry args={[0.3, 0.25, 0.6, 24]} />
+            </mesh>
+            <mesh position={[0, 0.02, 0]} material={m.trim}>
+              <cylinderGeometry args={[0.32, 0.32, 0.04, 24]} />
+            </mesh>
+          </group>
+        )}
+      </group>
+      <group ref={g} position={d.from}>
+        <primitive object={model} />
+      </group>
+    </group>
+  );
 }
 
 /** 목표값을 향해 부드럽게 움직이며, 움직이는 동안에만 다시 그린다 */
@@ -687,6 +757,7 @@ export function FridgeWorld({ state, overlay }: { state: WorldState; overlay: Ov
         <SlotItems slot="fridge_door" state={state} m={m} overlay={overlay} parent="fridgeDoor" />
       </Door>
       <Door kind="freezer" m={m} open={state.doorOpen} instant={instant} overlay={overlay} />
+      {state.departure && <Departing key={state.departure.id} d={state.departure} m={m} />}
       <Pantry m={m} overlay={overlay}>
         <SlotItems slot="pantry" state={state} m={m} overlay={overlay} parent="pantry" />
       </Pantry>

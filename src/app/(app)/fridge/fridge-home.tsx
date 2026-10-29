@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AddItemSheet } from "@/components/add-item-sheet";
 import { FlyAway, type FlyAwayRequest } from "@/components/fridge/fly-away";
 import { FridgeView } from "@/components/fridge/fridge-view";
@@ -102,6 +102,7 @@ export function FridgeHome() {
   // 브라우저 저장소를 읽지만, 보기는 snapshot(브라우저에서만 채워짐)이 있을 때만 그리므로 수화 불일치가 없다.
   const [view, setView] = useState<View>(loadView);
   const [fly, setFly] = useState<FlyAwayRequest | null>(null);
+  const clearFly = useCallback(() => setFly(null), []);
   // 식단에서 "냉장고에서 재료 보기"로 들어오면 주소의 #cook=<레시피 id>로 그 요리의 재료를 강조한다.
   const cookRecipeId = useCookHash();
   const cookRecipe = cookRecipeId ? RECIPE_BY_ID.get(cookRecipeId) : undefined;
@@ -244,6 +245,8 @@ export function FridgeHome() {
                   onSelect={selectItem}
                   onMove={moveItem}
                   highlight={highlight}
+                  departure={fly}
+                  onDepartureDone={clearFly}
                 />
               </>
             ) : (
@@ -295,13 +298,19 @@ export function FridgeHome() {
                 id: Date.now(),
                 kind: status === "used_up" ? "plate" : "trash",
                 name: itemDisplayName(selected, (id) => INGREDIENT_BY_ID.get(id)),
+                itemId: selected.id,
+                ingredientId: selected.ingredientId,
+                category: selected.ingredientId
+                  ? (INGREDIENT_BY_ID.get(selected.ingredientId)?.category ?? null)
+                  : null,
                 from: selectedRect.current,
               });
             }
           }}
         />
       )}
-      {fly && <FlyAway key={fly.id} request={fly} onDone={() => setFly(null)} />}
+      {/* 냉장고 보기에서는 3D 장면이 연출하고, 목록 보기에서만 화면 위 연출을 쓴다 */}
+      {fly && view === "list" && <FlyAway key={fly.id} request={fly} onDone={clearFly} />}
       {toast}
     </main>
   );

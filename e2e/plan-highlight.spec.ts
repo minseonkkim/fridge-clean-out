@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("식단 → 냉장고 재료 강조", () => {
+  // 첫 방문 인트로는 e2e/intro.spec.ts에서 본다
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => window.sessionStorage.setItem("naengteol:intro", "seen"));
+  });
+
   test("요리의 재료만 밝게 보이고 문이 저절로 열리며, 해제하면 평소대로", async ({ page }) => {
     await page.goto("/fridge");
     await page.getByRole("button", { name: "재료 추가" }).click();

@@ -6,8 +6,8 @@ import { SLOT_LABEL } from "@/lib/domain/fridge-view";
 
 export interface ZoomRequest {
   slot: CompartmentSlot;
-  /** 확대를 시작한 칸의 화면 위치 (그 자리에서 커지는 연출용) */
-  from: DOMRect;
+  /** 확대를 시작한 칸의 화면 위치 */
+  from?: DOMRect;
 }
 
 export const ZoomContext = createContext<((req: ZoomRequest) => void) | null>(null);
@@ -23,7 +23,7 @@ function prefersReducedMotion() {
 }
 
 /**
- * 칸 확대 (기획서 3.2절). 누른 칸의 자리에서 화면을 채우도록 커진다.
+ * 칸 확대 (기획서 3.2절). 3D 카메라가 그 칸으로 다가가고, 아래에 그 칸의 재료 목록이 올라온다.
  * 닫기 버튼, 브라우저 뒤로가기, 두 손가락 오므리기(핀치)로 돌아간다.
  */
 export function CompartmentZoom({
@@ -41,31 +41,21 @@ export function CompartmentZoom({
   const closeRef = useRef<HTMLButtonElement>(null);
   const label = SLOT_LABEL[request.slot];
 
-  // 누른 칸 위치에서 화면 크기로 커지는 연출 (FLIP)
+  // 목록 패널이 아래에서 올라온다 (카메라는 3D 장면이 옮긴다)
   useLayoutEffect(() => {
     const panel = panelRef.current;
     if (!panel) return;
     closeRef.current?.focus({ preventScroll: true });
     if (typeof panel.animate !== "function") return;
-    // 움직임 줄이기: 커지는 대신 제자리에서 페이드
+    // 움직임 줄이기: 올라오는 대신 제자리에서 페이드
     if (prefersReducedMotion()) {
       panel.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
       return;
     }
-    const to = panel.getBoundingClientRect();
-    const from = request.from;
-    const dx = from.left - to.left;
-    const dy = from.top - to.top;
-    const sx = from.width / to.width;
-    const sy = from.height / to.height;
     panel.animate(
       [
-        {
-          transformOrigin: "top left",
-          transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
-          opacity: 0.6,
-        },
-        { transformOrigin: "top left", transform: "none", opacity: 1 },
+        { transform: "translateY(40%)", opacity: 0 },
+        { transform: "none", opacity: 1 },
       ],
       { duration: 280, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
     );
@@ -95,7 +85,7 @@ export function CompartmentZoom({
       role="dialog"
       aria-modal="true"
       aria-label={`${label} 크게 보기`}
-      className="fixed inset-0 z-30 bg-black/30 p-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+5rem)]"
+      className="fixed inset-0 z-30 flex flex-col justify-end bg-black/10 p-3 pb-[calc(env(safe-area-inset-bottom)+5rem)]"
       onKeyDown={(e) => e.key === "Escape" && closeViaUi()}
       onClick={(e) => e.target === e.currentTarget && closeViaUi()}
       onTouchStart={(e) => {
@@ -114,7 +104,7 @@ export function CompartmentZoom({
     >
       <div
         ref={panelRef}
-        className="mx-auto flex h-full max-w-md flex-col gap-3 overflow-y-auto rounded-3xl bg-sky-50 p-4 shadow-2xl dark:bg-neutral-900"
+        className="mx-auto flex max-h-[42dvh] w-full max-w-md flex-col gap-3 overflow-y-auto rounded-3xl bg-sky-50/95 p-4 shadow-2xl backdrop-blur dark:bg-neutral-900/95"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{label}</h2>

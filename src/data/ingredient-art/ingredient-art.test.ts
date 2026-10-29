@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { INGREDIENTS } from "../ingredients";
-import { CATEGORY_ART, INGREDIENT_ART, ingredientArtSvg, ingredientArtUrl } from ".";
+import {
+  CATEGORY_SPEC as CATEGORY_ART,
+  INGREDIENT_SPEC as INGREDIENT_ART,
+  ingredientArtSvg,
+  ingredientArtUrl,
+} from ".";
 
 describe("재료 일러스트", () => {
   it("사전의 모든 재료에 그림이 있다", () => {

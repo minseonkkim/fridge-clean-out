@@ -10,6 +10,11 @@ async function addBulk(page: Page, text: string, count: number) {
 }
 
 test.describe("냉장고 문", () => {
+  // 첫 방문 인트로는 e2e/intro.spec.ts에서 본다
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => window.sessionStorage.setItem("naengteol:intro", "seen"));
+  });
+
   test("닫힌 문에 급한 재료 배지가 붙고, 누르면 열려 재료를 고를 수 있다", async ({ page }) => {
     await page.goto("/fridge");
     // 숙주 D-2, 돼지고기 D-3 → 3일 안에 2 / 만두는 냉동
@@ -46,17 +51,14 @@ test.describe("냉장고 문", () => {
     await expect(page.getByRole("button", { name: "냉장실 문 열기" })).toBeVisible();
   });
 
-  test("움직임 줄이기 설정이면 회전하지 않는다", async ({ page }) => {
+  test("움직임 줄이기 설정이면 3D 문이 돌지 않고 바로 열린다", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/fridge");
-    const door = page.getByRole("button", { name: "냉장실 문 열기" });
-    const transform = await door.evaluate((el) => getComputedStyle(el).transform);
-    await door.click();
+    const fridge = page.locator("[data-fridge-3d]");
+    await expect(fridge).toHaveAttribute("data-motion", "reduced");
+    await expect(fridge).toHaveAttribute("data-door", "closed");
+    await page.getByRole("button", { name: "냉장실 문 열기" }).click();
+    await expect(fridge).toHaveAttribute("data-door", "open");
     await expect(page.getByRole("button", { name: "냉장실 문 열기" })).toHaveCount(0);
-    // 열린 뒤에도 회전 변환이 없다 (페이드만)
-    const after = await page
-      .locator('button[aria-label="냉장실 문 열기"]')
-      .evaluate((el) => getComputedStyle(el).transform);
-    expect(after).toBe(transform);
   });
 });

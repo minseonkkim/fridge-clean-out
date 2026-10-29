@@ -32,6 +32,8 @@ test("냉장고 보기와 목록 보기가 같은 재료·수량·기한을 보�
   await sheet.getByRole("button", { name: "8개 냉장고에 넣기" }).click();
   await expect(sheet).toBeHidden();
 
+  // 3D 냉장고는 따로 내려받으므로 뜰 때까지 기다린다
+  await expect(page.locator("[data-fridge-3d]")).toBeVisible();
   // 냉동 서랍은 닫혀 있으면 재료가 그려지지 않으니 연다
   const freezer = page.getByRole("group", { name: "냉동실" });
   const closed = freezer.getByRole("button", { name: /서랍 열기/ });
